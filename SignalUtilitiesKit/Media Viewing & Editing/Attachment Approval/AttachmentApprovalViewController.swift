@@ -276,14 +276,14 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
     
     // MARK: - Contents
     
-    private func updateContents() {
+    @MainActor private func updateContents() {
         updateNavigationBar()
         updateInputAccessory()
     }
 
     // MARK: - Input Accessory
 
-    public func updateInputAccessory() {
+    @MainActor public func updateInputAccessory() {
         var currentPageViewController: AttachmentPrepViewController?
         
         if pageViewControllers?.count == 1 {
@@ -430,7 +430,8 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
             animated: animated
         ) { [weak self] finished in
             completion?(finished)
-            self?.updateContents()
+            
+            Task { @MainActor [weak self] in self?.updateContents() }
         }
     }
 
@@ -524,7 +525,7 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
             // Image editor has no changes.
             return attachmentItem.attachment
         }
-        guard let dstImage = ImageEditorCanvasView.renderForOutput(model: imageEditorModel, transform: imageEditorModel.currentTransform()) else {
+        guard let dstImage = ImageEditorCanvasView.renderForOutput(model: imageEditorModel, transform: imageEditorModel.currentTransform(), using: dependencies) else {
             Log.error(.cat, "Could not render for output.")
             return attachmentItem.attachment
         }
@@ -639,7 +640,7 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
     
     // MARK: - Session Pro CTA
     
-    @discardableResult func showSessionProCTAIfNeeded() -> Bool {
+    @discardableResult @MainActor func showSessionProCTAIfNeeded() -> Bool {
         guard dependencies[feature: .sessionProEnabled] && (!isSessionPro) else {
             return false
         }
@@ -660,7 +661,7 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
         return true
     }
     
-    func showModalForMessagesExceedingCharacterLimit(isSessionPro: Bool) {
+    @MainActor func showModalForMessagesExceedingCharacterLimit(isSessionPro: Bool) {
         guard !showSessionProCTAIfNeeded() else { return }
         
         self.hideInputAccessoryView()
@@ -687,7 +688,7 @@ public class AttachmentApprovalViewController: UIPageViewController, UIPageViewC
 // MARK: - AttachmentTextToolbarDelegate
 
 extension AttachmentApprovalViewController: AttachmentTextToolbarDelegate {
-    func attachmentTextToolBarDidTapCharacterLimitLabel(_ attachmentTextToolbar: AttachmentTextToolbar) {
+    @MainActor func attachmentTextToolBarDidTapCharacterLimitLabel(_ attachmentTextToolbar: AttachmentTextToolbar) {
         guard !showSessionProCTAIfNeeded() else { return }
         self.hideInputAccessoryView()
         let confirmationModal: ConfirmationModal = ConfirmationModal(
@@ -709,7 +710,7 @@ extension AttachmentApprovalViewController: AttachmentTextToolbarDelegate {
         present(confirmationModal, animated: true, completion: nil)
     }
 
-    func attachmentTextToolbarDidTapSend(_ attachmentTextToolbar: AttachmentTextToolbar) {
+    @MainActor func attachmentTextToolbarDidTapSend(_ attachmentTextToolbar: AttachmentTextToolbar) {
         guard
             let text = attachmentTextToolbar.text,
             LibSession.numberOfCharactersLeft(
@@ -737,7 +738,7 @@ extension AttachmentApprovalViewController: AttachmentTextToolbarDelegate {
         )
     }
 
-    func attachmentTextToolbarDidChange(_ attachmentTextToolbar: AttachmentTextToolbar) {
+    @MainActor func attachmentTextToolbarDidChange(_ attachmentTextToolbar: AttachmentTextToolbar) {
         approvalDelegate?.attachmentApproval(self, didChangeMessageText: attachmentTextToolbar.text)
     }
 }
@@ -745,11 +746,11 @@ extension AttachmentApprovalViewController: AttachmentTextToolbarDelegate {
 // MARK: -
 
 extension AttachmentApprovalViewController: AttachmentPrepViewControllerDelegate {
-    func prepViewControllerUpdateNavigationBar() {
+    @MainActor func prepViewControllerUpdateNavigationBar() {
         updateNavigationBar()
     }
 
-    func prepViewControllerUpdateControls() {
+    @MainActor func prepViewControllerUpdateControls() {
         updateInputAccessory()
     }
 }
@@ -758,11 +759,39 @@ extension AttachmentApprovalViewController: AttachmentPrepViewControllerDelegate
 
 extension SignalAttachmentItem: GalleryRailItem {
     func buildRailItemView(using dependencies: Dependencies) -> UIView {
-        let imageView = UIImageView()
-        imageView.image = getThumbnailImage(using: dependencies)
-        imageView.themeBackgroundColor = .backgroundSecondary
+        let imageView: SessionImageView = SessionImageView(dataManager: dependencies[singleton: .imageDataManager])
         imageView.contentMode = .scaleAspectFill
+        imageView.themeBackgroundColor = .backgroundSecondary
         
+        if let path: String = (attachment.dataSource.dataPathIfOnDisk ?? attachment.dataUrl?.absoluteString) {
+            let source: ImageDataManager.DataSource = {
+                /// Can't thumbnail animated images so just load the full file in this case
+                if attachment.isAnimatedImage {
+                    return .url(URL(fileURLWithPath: path))
+                }
+                
+                /// Videos have a custom method for generating their thumbnails so use that instead
+                if attachment.isVideo {
+                    return .videoUrl(
+                        URL(fileURLWithPath: path),
+                        attachment.mimeType,
+                        attachment.sourceFilename,
+                        dependencies[singleton: .attachmentManager]
+                    )
+                }
+                
+                return .urlThumbnail(
+                    URL(fileURLWithPath: path),
+                    .small,
+                    dependencies[singleton: .attachmentManager]
+                )
+            }()
+            
+            Task(priority: .userInitiated) {
+                await imageView.loadImage(source)
+            }
+        }
+
         return imageView
     }
     

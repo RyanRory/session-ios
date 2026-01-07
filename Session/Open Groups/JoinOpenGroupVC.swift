@@ -6,6 +6,7 @@ import AVFoundation
 import GRDB
 import SessionUIKit
 import SessionMessagingKit
+import SessionNetworkingKit
 import SessionUtilitiesKit
 import SignalUtilitiesKit
 
@@ -76,7 +77,17 @@ final class JoinOpenGroupVC: BaseVC, UIPageViewControllerDataSource, UIPageViewC
         
         setNavBarTitle("communityJoin".localized())
         view.themeBackgroundColor = .backgroundSecondary
-        let navBarHeight: CGFloat = (navigationController?.navigationBar.frame.size.height ?? 0)
+        
+        // Only account for navigation header when view controller
+        // presentation type is `fullScreen`
+        var navBarHeight: CGFloat {
+            switch modalPresentationStyle {
+            case .fullScreen:
+                return navigationController?.navigationBar.frame.size.height ?? 0
+            default:
+                return 0
+            }
+        }
         
         let closeButton = UIBarButtonItem(image: #imageLiteral(resourceName: "X"), style: .plain, target: self, action: #selector(close))
         closeButton.themeTintColor = .textPrimary
@@ -475,11 +486,11 @@ private final class EnterURLVC: UIViewController, UIGestureRecognizerDelegate, O
         )
     }
     
-    func join(_ room: OpenGroupAPI.Room) {
+    func join(_ room: Network.SOGS.Room) {
         joinOpenGroupVC?.joinOpenGroup(
             roomToken: room.token,
-            server: OpenGroupAPI.defaultServer,
-            publicKey: OpenGroupAPI.defaultServerPublicKey,
+            server: Network.SOGS.defaultServer,
+            publicKey: Network.SOGS.defaultServerPublicKey,
             shouldOpenCommunity: true,
             onError: nil
         )

@@ -35,7 +35,14 @@ public extension UIView {
     }
     
     var themeTintColor: ThemeValue? {
-        set { ThemeManager.set(self, keyPath: \.tintColor, to: newValue) }
+        set {
+            /// The `UIActivityIndicatorView` uses a `color` value instead of `tintColor` so redirect it in case this
+            /// is mistakenly used
+            switch self {
+                case let indicator as UIActivityIndicatorView: indicator.themeColor = newValue
+                default: ThemeManager.set(self, keyPath: \.tintColor, to: newValue)
+            }
+        }
         get { return nil }
     }
     
@@ -337,6 +344,13 @@ public extension UIPageControl {
     }
 }
 
+public extension UIActivityIndicatorView {
+    var themeColor: ThemeValue? {
+        set { ThemeManager.set(self, keyPath: \.color, to: newValue) }
+        get { return nil }
+    }
+}
+
 public extension GradientView {
     var themeBackgroundGradient: [ThemeValue]? {
         set {
@@ -375,7 +389,7 @@ public extension GradientView {
 }
 
 public extension CAShapeLayer {
-    var themeStrokeColor: ThemeValue? {
+    @MainActor var themeStrokeColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.strokeColor, to: newValue) }
         get { return nil }
     }
@@ -399,7 +413,7 @@ public extension CAShapeLayer {
         get { return self.strokeColor.map { .color(UIColor(cgColor: $0)) } }
     }
     
-    var themeFillColor: ThemeValue? {
+    @MainActor var themeFillColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.fillColor, to: newValue) }
         get { return nil }
     }
@@ -425,7 +439,7 @@ public extension CAShapeLayer {
 }
 
 public extension CALayer {
-    var themeBackgroundColor: ThemeValue? {
+    @MainActor var themeBackgroundColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.backgroundColor, to: newValue) }
         get { return nil }
     }
@@ -449,19 +463,19 @@ public extension CALayer {
         get { return self.backgroundColor.map { .color(UIColor(cgColor: $0)) } }
     }
     
-    var themeBorderColor: ThemeValue? {
+    @MainActor var themeBorderColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.borderColor, to: newValue) }
         get { return nil }
     }
     
-    var themeShadowColor: ThemeValue? {
+    @MainActor var themeShadowColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.shadowColor, to: newValue) }
         get { return nil }
     }
 }
 
 public extension CATextLayer {
-    var themeForegroundColor: ThemeValue? {
+    @MainActor var themeForegroundColor: ThemeValue? {
         set { ThemeManager.set(self, keyPath: \.foregroundColor, to: newValue) }
         get { return nil }
     }
@@ -508,7 +522,7 @@ extension AttributedTextAssignable {
         get { attributedTextValue.map { ThemedAttributedString(attributedString: $0) } }
         set { attributedTextValue = newValue?.value }
     }
-    public var themeAttributedText: ThemedAttributedString? {
+    @MainActor public var themeAttributedText: ThemedAttributedString? {
         set { ThemeManager.set(self, keyPath: \.themeAttributedTextValue, to: newValue) }
         get { return nil }
     }
@@ -520,7 +534,7 @@ extension UITextField: DirectAttributedTextAssignable {
         get { attributedPlaceholder.map { ThemedAttributedString(attributedString: $0) } }
         set { attributedPlaceholder = newValue?.value }
     }
-    public var themeAttributedPlaceholder: ThemedAttributedString? {
+    @MainActor public var themeAttributedPlaceholder: ThemedAttributedString? {
         set { ThemeManager.set(self, keyPath: \.themeAttributedPlaceholderValue, to: newValue) }
         get { return nil }
     }

@@ -501,10 +501,12 @@ public class ImageEditorCanvasView: UIView {
             ]
         )
         let layer = EditorTextLayer(itemId: item.itemId)
-        layer.string = attributedString
-        layer.themeForegroundColorForced = .color(item.color.color)
-        layer.font = CGFont(item.font.fontName as CFString)
+        // Set as .strings, passing only attributed string does not display text
+        // `attributedString` is now only used to compute sizes
+        layer.string = attributedString.string
+        layer.font = item.font
         layer.fontSize = fontSize
+        layer.themeForegroundColorForced = .color(item.color.color)
         layer.isWrapped = true
         layer.alignmentMode = CATextLayerAlignmentMode.center
         // I don't think we need to enable allowsFontSubpixelQuantization
@@ -595,16 +597,22 @@ public class ImageEditorCanvasView: UIView {
     // We render using the transform parameter, not the transform from the model.
     // This allows this same method to be used for rendering "previews" for the
     // crop tool and the final output.
-    public class func renderForOutput(model: ImageEditorModel, transform: ImageEditorTransform) -> UIImage? {
-        // TODO: Do we want to render off the main thread?
-        Log.assertOnMainThread()
-
+    @MainActor public class func renderForOutput(
+        model: ImageEditorModel,
+        transform: ImageEditorTransform,
+        using dependencies: Dependencies
+    ) -> UIImage? {
         // Render output at same size as source image.
         let dstSizePixels = transform.outputSizePixels
         let dstScale: CGFloat = 1.0 // The size is specified in pixels, not in points.
         let viewSize = dstSizePixels
-
-        let hasAlpha = Data.hasAlpha(forValidImageFilePath: model.srcImagePath)
+        let hasAlpha: Bool = (MediaUtils.MediaMetadata(
+            from: model.srcImagePath,
+            type: nil,
+            mimeType: nil,
+            sourceFilename: nil,
+            using: dependencies
+        )?.hasAlpha == true)
 
         // We use an UIImageView + UIView.renderAsImage() instead of a CGGraphicsContext
         // Because CALayer.renderInContext() doesn't honor CALayer properties like frame,

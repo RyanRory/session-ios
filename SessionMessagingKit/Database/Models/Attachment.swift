@@ -7,7 +7,7 @@ import Combine
 import UniformTypeIdentifiers
 import GRDB
 import SessionUtilitiesKit
-import SessionSnodeKit
+import SessionNetworkingKit
 import SessionUIKit
 
 public struct Attachment: Codable, Identifiable, Equatable, Hashable, FetchableRecord, PersistableRecord, TableRecord, ColumnExpressible {
@@ -178,7 +178,7 @@ public struct Attachment: Codable, Identifiable, Equatable, Hashable, FetchableR
             case .success = Result(try dataSource.write(to: uploadInfo.path))
         else { return nil }
         
-        let imageSize: CGSize? = Data.mediaSize(
+        let imageSize: CGSize? = MediaUtils.unrotatedSize(
             for: uploadInfo.path,
             type: UTType(sessionMimeType: contentType),
             mimeType: contentType,
@@ -406,7 +406,7 @@ extension Attachment {
                     .path(for: finalDownloadUrl)
             else { return nil }
             
-            return Data.mediaSize(
+            return MediaUtils.unrotatedSize(
                 for: path,
                 type: UTType(sessionMimeType: contentType),
                 mimeType: contentType,
@@ -484,7 +484,13 @@ extension Attachment {
     }
     
     public func buildProto() -> SNProtoAttachmentPointer? {
-        let builder = SNProtoAttachmentPointer.builder(id: 0)   /// `id` is deprecated, rely on `url` instead
+        /// The `id` value on the protobuf is deprecated, rely on `url` instead
+        ///
+        /// **Note:** We need to continue to send this because it seems that the Desktop client _does_ in fact still use this
+        /// id for downloading attachments. Desktop will be updated to remove it's use but in order to fix attachments for old
+        /// versions we set this value again
+        let legacyId: UInt64 = (Network.FileServer.fileId(for: self.downloadUrl).map { UInt64($0) } ?? 0)
+        let builder = SNProtoAttachmentPointer.builder(id: legacyId)
         builder.setContentType(contentType)
         
         if let sourceFilename: String = sourceFilename, !sourceFilename.isEmpty {
@@ -645,7 +651,12 @@ extension Attachment {
     
     public var shortDescription: String {
         if isImage { return "image".localized() }
-        if isAudio { return "audio".localized() }
+        if isAudio {
+            switch variant {
+                case .voiceMessage:  return "messageVoice".localized()
+                case .standard:  return "audio".localized()
+            }
+        }
         if isVideo { return "video".localized() }
         return "document".localized()
     }
@@ -677,15 +688,5 @@ extension Attachment {
         try data.write(to: URL(fileURLWithPath: path))
 
         return true
-    }
-    
-    public static func fileId(for downloadUrl: String?) -> String? {
-        return downloadUrl
-            .map { urlString -> String? in
-                urlString
-                    .split(separator: "/")  // stringlint:ignore
-                    .last
-                    .map { String($0) }
-            }
     }
 }

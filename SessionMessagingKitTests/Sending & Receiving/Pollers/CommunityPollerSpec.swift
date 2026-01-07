@@ -3,7 +3,7 @@
 import UIKit
 import Combine
 import GRDB
-import SessionSnodeKit
+import SessionNetworkingKit
 import SessionUtilitiesKit
 
 import Quick
@@ -21,10 +21,7 @@ class CommunityPollerSpec: AsyncSpec {
         }
         @TestState(singleton: .storage, in: dependencies) var mockStorage: Storage! = SynchronousStorage(
             customWriter: try! DatabaseQueue(),
-            migrationTargets: [
-                SNUtilitiesKit.self,
-                SNMessagingKit.self
-            ],
+            migrations: SNMessagingKit.migrations,
             using: dependencies,
             initialData: { db in
                 try Identity(variant: .x25519PublicKey, data: Data(hex: TestConstants.publicKey)).insert(db)
@@ -63,7 +60,7 @@ class CommunityPollerSpec: AsyncSpec {
                 network
                     .when { $0.send(.any, to: .any, requestTimeout: .any, requestAndPathBuildTimeout: .any) }
                     .thenReturn(
-                        MockNetwork.response(with: FileUploadResponse(id: "1"))
+                        MockNetwork.response(with: FileUploadResponse(id: "1", expires: nil))
                             .delay(for: .seconds(10), scheduler: DispatchQueue.main)
                             .eraseToAnyPublisher()
                     )

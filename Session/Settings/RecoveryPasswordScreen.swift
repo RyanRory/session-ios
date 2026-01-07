@@ -66,11 +66,15 @@ struct RecoveryPasswordScreen: View {
                             }
                             .padding(.bottom, Values.smallSpacing)
                             
-                            Text("recoveryPasswordDescription".localized())
-                                .font(.system(size: Values.smallFontSize))
-                                .foregroundColor(themeColor: .textPrimary)
-                                .padding(.bottom, Values.mediumSpacing)
-                                .fixedSize(horizontal: false, vertical: true)
+                            AttributedText(
+                                "recoveryPasswordDescription".localizedFormatted(
+                                    baseFont: .systemFont(ofSize: Values.smallFontSize)
+                                )
+                            )
+                            .font(.system(size: Values.smallFontSize))
+                            .foregroundColor(themeColor: .textPrimary)
+                            .padding(.bottom, Values.mediumSpacing)
+                            .fixedSize(horizontal: false, vertical: true)
                             
                             if self.showQRCode {
                                 QRCodeView(
@@ -210,6 +214,8 @@ struct RecoveryPasswordScreen: View {
                                 alignment: .leading
                             )
                             
+                            Spacer()
+                            
                             Button {
                                 hideRecoveryPassword()
                             } label: {
@@ -218,9 +224,13 @@ struct RecoveryPasswordScreen: View {
                                     .font(.system(size: Values.verySmallFontSize))
                                     .foregroundColor(themeColor: .danger)
                                     .frame(
-                                        width: 55,
                                         height: Values.mediumSmallButtonHeight
                                     )
+                                    .frame(
+                                        minWidth: Values.alertButtonHeight,
+                                        alignment: .center
+                                    )
+                                    .padding(.horizontal, Values.smallSpacing)
                                     .overlay(
                                         Capsule()
                                             .stroke(themeColor: .danger)

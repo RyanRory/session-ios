@@ -29,6 +29,10 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
     /// never have disappeared before - this is only needed for value observers since they run asynchronously)
     private var hasReloadedThreadDataAfterDisappearance: Bool = true
     
+    /// This flag indicates that a need for inputview keyboard presentation is needed, this is in events
+    /// where a delegate action is trigger before poping back into `ConversationVC`
+    var hasPendingInputKeyboardPresentationEvent: Bool = false
+    
     var focusedInteractionInfo: Interaction.TimestampInfo?
     var focusBehaviour: ConversationViewModel.FocusBehaviour = .none
     
@@ -43,6 +47,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
     // Context menu
     var contextMenuWindow: ContextMenuWindow?
     var contextMenuVC: ContextMenuVC?
+    var documentHandler: DocumentPickerHandler?
     
     // Mentions
     var currentMentionStartIndex: String.Index?
@@ -360,7 +365,6 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
             .backgroundPrimary,
             .backgroundPrimary
         ]
-        result.set(.height, to: 92)
         
         return result
     }()
@@ -378,6 +382,16 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         result.setTitle("recreateGroup".localized(), for: .normal)
         result.addTarget(self, action: #selector(recreateLegacyGroupTapped), for: .touchUpInside)
         result.accessibilityIdentifier = "Legacy Groups Recreate Button"
+        
+        return result
+    }()
+    
+    // Handle taps outside of tableview cell
+    private lazy var tableViewTapGesture: UITapGestureRecognizer = {
+        let result: UITapGestureRecognizer = UITapGestureRecognizer()
+        result.delegate = self
+        result.addTarget(self, action: #selector(dismissKeyboardOnTap))
+        result.cancelsTouchesInView = false
         
         return result
     }()
@@ -532,6 +546,9 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
                 object: nil
             )
         }
+        
+        // Gesture
+        view.addGestureRecognizer(tableViewTapGesture)
 
         self.viewModel.navigatableState.setupBindings(viewController: self, disposables: &self.viewModel.disposables)
         
@@ -580,6 +597,15 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
             self?.didFinishInitialLayout = true
             self?.viewIsAppearing = false
             self?.lastPresentedViewController = nil
+
+            // Show inputview keyboard
+            if self?.hasPendingInputKeyboardPresentationEvent == true {
+                // Added 0.1 delay to remove inputview stutter animation glitch while keyboard is animating up
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    _ = self?.snInputView.becomeFirstResponder()
+                }
+                self?.hasPendingInputKeyboardPresentationEvent = false
+            }
         }
     }
 
@@ -1566,7 +1592,8 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         // value will break things)
         let tableViewBottom: CGFloat = (tableView.contentSize.height - tableView.bounds.height + tableView.contentInset.bottom)
         
-        if tableView.contentOffset.y < (tableViewBottom - 5) {
+        // Added `insetDifference > 0` to remove sudden table collapse and overscroll
+        if tableView.contentOffset.y < (tableViewBottom - 5) && insetDifference > 0 {
             tableView.contentOffset.y += insetDifference
         }
         
@@ -1692,6 +1719,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
                     shouldExpanded: viewModel.messageExpandedInteractionIds
                         .contains(cellViewModel.id),
                     lastSearchText: viewModel.lastSearchedText,
+                    tableSize: tableView.bounds.size,
                     using: viewModel.dependencies
                 )
                 cell.delegate = self
@@ -1708,7 +1736,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         switch section.model {
             case .loadOlder, .loadNewer:
                 let loadingIndicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
-                loadingIndicator.themeTintColor = .textPrimary
+                loadingIndicator.themeColor = .textPrimary
                 loadingIndicator.alpha = 0.5
                 loadingIndicator.startAnimating()
                 
@@ -1978,6 +2006,12 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         becomeFirstResponder()
         reloadInputViews()
     }
+    
+    // Manually cancel the search and clear the text to remove hightlights
+    func willManuallyCancelSearchUI() {
+        searchController.uiSearchController.isActive = false
+        searchController.uiSearchController.searchBar.text = ""
+    }
 
     func didDismissSearchController(_ searchController: UISearchController) {
         hideSearchUI()
@@ -2097,6 +2131,14 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
             self.highlightCellIfNeeded(interactionId: interactionInfo.id, behaviour: focusBehaviour)
             self.focusedInteractionInfo = nil
             self.focusBehaviour = .none
+            
+            // Check if the last known keyboard frame exists,
+            // if it does not intersect with the target rectangle (the cell to be scrolled to),
+            if let keyboardFrame = lastKnownKeyboardFrame, !keyboardFrame.intersects(targetRect) {
+                // If all conditions are met, scroll the table view to make the target rectangle visible.
+                // This is to ensure a cell is not covered by the keyboard.
+                self.tableView.scrollRectToVisible(targetRect, animated: true)
+            }
             return
         }
         

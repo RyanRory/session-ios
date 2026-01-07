@@ -22,42 +22,6 @@ public class MediaMessageView: UIView {
     public let mode: Mode
     public let attachment: SignalAttachment
     private let disableLinkPreviewImageDownload: Bool
-    
-    private lazy var validImageData: Data? = {
-        guard
-            attachment.isValidImage,
-            let dataUrl: URL = attachment.dataUrl,
-            let imageData: Data = try? Data(contentsOf: dataUrl), (
-                (
-                    attachment.dataType == .gif &&
-                    attachment.isAnimatedImage &&
-                    imageData.hasValidGifSize
-                ) || (
-                    attachment.dataType == .webP &&
-                    attachment.isAnimatedImage &&
-                    imageData.sizeForWebpData != .zero
-                ) || (
-                    imageData.hasValidImageDimensions(isAnimated: false)
-                )
-            )
-        else { return nil }
-        
-        return imageData
-    }()
-    private lazy var validVideoImage: UIImage? = {
-        if attachment.isVideo {
-            guard
-                attachment.isValidVideo,
-                let image: UIImage = attachment.videoPreview(using: dependencies),
-                image.size.width > 0,
-                image.size.height > 0
-            else { return nil }
-            
-            return image
-        }
-        
-        return nil
-    }()
     private lazy var duration: TimeInterval? = attachment.duration(using: dependencies)
     private var linkPreviewInfo: (url: String, draft: LinkPreviewDraft?)?
 
@@ -146,10 +110,19 @@ public class MediaMessageView: UIView {
         
         // Override the image to the correct one
         if attachment.isImage || attachment.isAnimatedImage {
-            if let imageData: Data = validImageData, let dataUrl: URL = attachment.dataUrl {
+            let maybeSource: ImageDataManager.DataSource? = {
+                guard attachment.isValidImage else { return nil }
+                
+                return (
+                    attachment.dataSource.dataPathIfOnDisk.map { .url(URL(fileURLWithPath: $0)) } ??
+                    attachment.dataSource.dataUrl.map { .url($0) }
+                )
+            }()
+            
+            if let source: ImageDataManager.DataSource = maybeSource {
                 view.layer.minificationFilter = .trilinear
                 view.layer.magnificationFilter = .trilinear
-                view.loadImage(.data(dataUrl.absoluteString, imageData))
+                view.loadImage(source)
             }
             else {
                 view.contentMode = .scaleAspectFit
@@ -158,10 +131,28 @@ public class MediaMessageView: UIView {
             }
         }
         else if attachment.isVideo {
-            if let validImage: UIImage = validVideoImage {
+            let maybeSource: ImageDataManager.DataSource? = {
+                guard attachment.isValidVideo else { return nil }
+                
+                return attachment.dataSource.dataUrl.map { url in
+                    .videoUrl(
+                        url,
+                        attachment.mimeType,
+                        attachment.sourceFilename,
+                        dependencies[singleton: .attachmentManager]
+                    )
+                }
+            }()
+            
+            if let source: ImageDataManager.DataSource = maybeSource {
                 view.layer.minificationFilter = .trilinear
                 view.layer.magnificationFilter = .trilinear
-                view.image = validImage
+                view.loadImage(source)
+            }
+            else {
+                view.contentMode = .scaleAspectFit
+                view.image = UIImage(named: "FileLarge")?.withRenderingMode(.alwaysTemplate)
+                view.themeTintColor = .textPrimary
             }
         }
         else if attachment.isUrl {
@@ -331,6 +322,7 @@ public class MediaMessageView: UIView {
         titleStackView.addArrangedSubview(subtitleLabel)
         
         imageView.alpha = 1
+        imageView.set(.width, to: .width, of: stackView)
         imageView.addSubview(fileTypeImageView)
         
         // Type-specific configurations
@@ -378,12 +370,12 @@ public class MediaMessageView: UIView {
         
         let maybeImageSize: CGFloat? = {
             if attachment.isImage || attachment.isAnimatedImage {
-                if validImageData != nil { return nil }
+                guard attachment.isValidImage else { return nil }
                 
                 // If we don't have a valid image then use the 'generic' case
             }
             else if attachment.isValidVideo {
-                if validVideoImage != nil { return nil }
+                guard attachment.isValidVideo else { return nil }
                 
                 // If we don't have a valid image then use the 'generic' case
             }
@@ -414,12 +406,7 @@ public class MediaMessageView: UIView {
                 ) :
                 stackView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor)
             ),
-            
-            imageView.widthAnchor.constraint(
-                equalTo: imageView.heightAnchor,
-                multiplier: clampedRatio
-            ),
-            
+
             (maybeImageSize != nil ?
                 imageView.widthAnchor.constraint(equalToConstant: imageSize) :
                 imageView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor)
@@ -434,17 +421,25 @@ public class MediaMessageView: UIView {
                 equalTo: imageView.centerYAnchor,
                 constant: ceil(imageSize * 0.15)
             ),
-            fileTypeImageView.widthAnchor.constraint(
-                equalTo: fileTypeImageView.heightAnchor,
-                multiplier: ((fileTypeImageView.image?.size.width ?? 1) / (fileTypeImageView.image?.size.height ?? 1))
-            ),
-            fileTypeImageView.widthAnchor.constraint(equalTo: imageView.widthAnchor, multiplier: 0.5),
+            
+            fileTypeImageView.widthAnchor.constraint(equalToConstant: imageSize * 0.5),
+            fileTypeImageView.heightAnchor.constraint(equalToConstant: imageSize * 0.5),
 
             loadingView.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
             loadingView.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
             loadingView.widthAnchor.constraint(equalToConstant: ceil(imageSize / 3)),
             loadingView.heightAnchor.constraint(equalToConstant: ceil(imageSize / 3))
         ])
+        
+        if imageView.image?.size == nil {
+            // Handle `clampedRatio` ratio when image is from data
+            NSLayoutConstraint.activate([
+                imageView.widthAnchor.constraint(
+                    equalTo: imageView.heightAnchor,
+                    multiplier: clampedRatio
+                )
+            ])
+        }
         
         // No inset for the text for URLs but there is for all other layouts
         if !attachment.isUrl {

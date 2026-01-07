@@ -2,7 +2,7 @@
 
 import Foundation
 import GRDB
-import SessionSnodeKit
+import SessionNetworkingKit
 import SessionUtilitiesKit
 
 extension MessageReceiver {
@@ -31,7 +31,8 @@ extension MessageReceiver {
         
         // Note: `message.sentTimestamp` is in ms (convert to TimeInterval before converting to
         // seconds to maintain the accuracy)
-        let messageSentTimestamp: TimeInterval = TimeInterval(Double(message.sentTimestampMs ?? 0) / 1000)
+        let messageSentTimestampMs: UInt64 = message.sentTimestampMs ?? 0
+        let messageSentTimestamp: TimeInterval = TimeInterval(Double(messageSentTimestampMs) / 1000)
         let isMainAppActive: Bool = dependencies[defaults: .appGroup, key: .isMainAppActive]
         
         // Update profile if needed (want to do this regardless of whether the message exists or
@@ -43,7 +44,7 @@ extension MessageReceiver {
                 displayNameUpdate: .contactUpdate(profile.displayName),
                 displayPictureUpdate: .from(profile, fallback: .contactRemove, using: dependencies),
                 blocksCommunityMessageRequests: profile.blocksCommunityMessageRequests,
-                sentTimestamp: messageSentTimestamp,
+                profileUpdateTimestamp: profile.updateTimestampSeconds,
                 using: dependencies
             )
         }
@@ -186,7 +187,7 @@ extension MessageReceiver {
             using: dependencies
         )
         do {
-            let isProMessage: Bool = dependencies.mutate(cache: .libSession, { $0.validateProProof(message.proProof) })
+            let isProMessage: Bool = dependencies.mutate(cache: .libSession, { $0.validateProProof(for: message) })
             let processedMessageBody: String? = Self.truncateMessageTextIfNeeded(
                 message.text,
                 isProMessage: isProMessage,
@@ -516,7 +517,7 @@ extension MessageReceiver {
         using dependencies: Dependencies
     ) throws -> Int64? {
         guard
-            let reaction: VisibleMessage.VMReaction = message.reaction,
+            let vmReaction: VisibleMessage.VMReaction = message.reaction,
             proto.dataMessage?.reaction != nil
         else { return nil }
         
@@ -525,8 +526,8 @@ extension MessageReceiver {
         let maybeInteractionId: Int64? = try? Interaction
             .select(.id)
             .filter(Interaction.Columns.threadId == thread.id)
-            .filter(Interaction.Columns.timestampMs == reaction.timestamp)
-            .filter(Interaction.Columns.authorId == reaction.publicKey)
+            .filter(Interaction.Columns.timestampMs == vmReaction.timestamp)
+            .filter(Interaction.Columns.authorId == vmReaction.publicKey)
             .filter(Interaction.Columns.variant != Interaction.Variant.standardIncomingDeleted)
             .filter(Interaction.Columns.state != Interaction.State.deleted)
             .asRequest(of: Int64.self)
@@ -539,10 +540,10 @@ extension MessageReceiver {
         let sortId = Reaction.getSortId(
             db,
             interactionId: interactionId,
-            emoji: reaction.emoji
+            emoji: vmReaction.emoji
         )
         
-        switch reaction.kind {
+        switch vmReaction.kind {
             case .react:
                 // Determine whether the app is active based on the prefs rather than the UIApplication state to avoid
                 // requiring main-thread execution
@@ -554,7 +555,7 @@ extension MessageReceiver {
                     serverHash: message.serverHash,
                     timestampMs: timestampMs,
                     authorId: sender,
-                    emoji: reaction.emoji,
+                    emoji: vmReaction.emoji,
                     count: 1,
                     sortId: sortId
                 ).inserted(db)
@@ -568,11 +569,12 @@ extension MessageReceiver {
                 }
                 
                 // Don't notify if the reaction was added before the lastest read timestamp for
-                // the conversation
+                // the conversation or the reaction is for the sender's own message
                 if
                     !suppressNotifications &&
                     sender != userSessionId.hexString &&
-                    !timestampAlreadyRead
+                    !timestampAlreadyRead &&
+                    vmReaction.publicKey != sender
                 {
                     try? dependencies[singleton: .notificationsManager].notifyUser(
                         cat: .messageReceiver,
@@ -619,7 +621,7 @@ extension MessageReceiver {
                 try Reaction
                     .filter(Reaction.Columns.interactionId == interactionId)
                     .filter(Reaction.Columns.authorId == sender)
-                    .filter(Reaction.Columns.emoji == reaction.emoji)
+                    .filter(Reaction.Columns.emoji == vmReaction.emoji)
                     .deleteAll(db)
         }
         

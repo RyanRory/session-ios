@@ -53,10 +53,6 @@ public enum ThemeManager {
         _primaryColor = targetPrimaryColor
         _hasLoadedTheme = true
         
-        if !hasSetInitialSystemTrait || themeChanged {
-            updateAllUI()
-        }
-        
         if matchSystemChanged {
             _matchSystemNightModeSetting = targetMatchSystemNightModeSetting
             
@@ -65,8 +61,19 @@ public enum ThemeManager {
             SNUIKit.mainWindow?.overrideUserInterfaceStyle = .unspecified
         }
         
-        // If the theme was changed then trigger the callback for the theme settings change (so it gets persisted)
-        guard themeChanged || matchSystemChanged else { return }
+        // If the theme was changed then trigger a UI update and the callback for the theme settings
+        // change (so it gets persisted)
+        guard themeChanged || matchSystemChanged else {
+            if !hasSetInitialSystemTrait {
+                updateAllUI()
+            }
+            
+            return
+        }
+        
+        if !hasSetInitialSystemTrait || themeChanged {
+            updateAllUI()
+        }
         
         SNUIKit.themeSettingsChanged(targetTheme, targetPrimaryColor, targetMatchSystemNightModeSetting)
     }
@@ -82,10 +89,10 @@ public enum ThemeManager {
         
         // Swap to the appropriate light/dark mode
         switch (currentUserInterfaceStyle, ThemeManager.currentTheme) {
-            case (.light, .classicDark): updateThemeState(theme: .classicLight)
-            case (.light, .oceanDark): updateThemeState(theme: .oceanLight)
-            case (.dark, .classicLight): updateThemeState(theme: .classicDark)
-            case (.dark, .oceanLight): updateThemeState(theme: .oceanDark)
+            case (.light, .classicDark): updateThemeState(theme: .classicLight, primaryColor: _primaryColor)
+            case (.light, .oceanDark): updateThemeState(theme: .oceanLight, primaryColor: _primaryColor)
+            case (.dark, .classicLight): updateThemeState(theme: .classicDark, primaryColor: _primaryColor)
+            case (.dark, .oceanLight): updateThemeState(theme: .oceanDark, primaryColor: _primaryColor)
             default: break
         }
     }
@@ -214,7 +221,7 @@ public enum ThemeManager {
         SNUIKit.mainWindow?.backgroundColor = color(for: .backgroundPrimary, in: currentTheme, with: primaryColor)
     }
     
-    public static func onThemeChange(observer: AnyObject, callback: @escaping (Theme, Theme.PrimaryColor, (ThemeValue) -> UIColor?) -> ()) {
+    @MainActor public static func onThemeChange(observer: AnyObject, callback: @escaping @MainActor (Theme, Theme.PrimaryColor, (ThemeValue) -> UIColor?) -> ()) {
         ThemeManager.uiRegistry.setObject(
             ThemeApplier(
                 existingApplier: ThemeManager.get(for: observer),
@@ -234,14 +241,19 @@ public enum ThemeManager {
         with primaryColor: Theme.PrimaryColor
     ) -> T? {
         switch value {
-            case .value(let value, let alpha): return T.resolve(value, for: theme)?.alpha(alpha)
+            case .value(let value, let alpha):
+                let color: T? = color(for: value, in: theme, with: primaryColor)
+                return color?.alpha(alpha) as? T
+                
             case .primary: return T.resolve(primaryColor)
             case .explicitPrimary(let explicitPrimary): return T.resolve(explicitPrimary)
             
             case .highlighted(let value, let alwaysDarken):
+                let color: T? = color(for: value, in: theme, with: primaryColor)!
+                
                 switch (currentTheme.interfaceStyle, alwaysDarken) {
-                    case (.light, _), (_, true): return T.resolve(value, for: theme)?.brighten(-0.06)
-                    default: return T.resolve(value, for: theme)?.brighten(0.08)
+                    case (.light, _), (_, true): return color?.brighten(-0.06) as? T
+                    default: return color?.brighten(0.08) as? T
                 }
                 
             case .dynamicForInterfaceStyle(let light, let dark):
@@ -299,7 +311,7 @@ public enum ThemeManager {
         }
     }
     
-    internal static func set<T: AnyObject>(
+    @MainActor internal static func set<T: AnyObject>(
         _ view: T,
         keyPath: ReferenceWritableKeyPath<T, UIColor?>,
         to value: ThemeValue?
@@ -335,7 +347,7 @@ public enum ThemeManager {
         ThemeManager.uiRegistry.setObject(updatedApplier, forKey: view)
     }
     
-    internal static func set<T: AnyObject>(
+    @MainActor internal static func set<T: AnyObject>(
         _ view: T,
         keyPath: ReferenceWritableKeyPath<T, CGColor?>,
         to value: ThemeValue?
@@ -369,7 +381,7 @@ public enum ThemeManager {
         )
     }
     
-    internal static func set<T: AttributedTextAssignable>(
+    @MainActor internal static func set<T: AttributedTextAssignable>(
         _ view: T,
         keyPath: ReferenceWritableKeyPath<T, ThemedAttributedString?>,
         to value: ThemedAttributedString?
@@ -444,14 +456,14 @@ internal class ThemeApplier {
         case controlState
     }
     
-    private let applyTheme: (Theme) -> ()
+    private let applyTheme: @MainActor (Theme) -> ()
     private let info: [AnyHashable]
     private var otherAppliers: [ThemeApplier]?
     
-    init(
+    @MainActor init(
         existingApplier: ThemeApplier?,
         info: [AnyHashable],
-        applyTheme: @escaping (Theme) -> ()
+        applyTheme: @escaping @MainActor (Theme) -> ()
     ) {
         self.applyTheme = applyTheme
         self.info = info
@@ -466,7 +478,7 @@ internal class ThemeApplier {
         
         // Automatically apply the theme immediately (if the database has been setup)
         if SNUIKit.config?.isStorageValid == true || ThemeManager.hasLoadedTheme {
-            self.apply(theme: ThemeManager.currentTheme, isInitialApplication: true)
+            apply(theme: ThemeManager.currentTheme, isInitialApplication: true)
         }
     }
     
@@ -497,7 +509,7 @@ internal class ThemeApplier {
         return self
     }
     
-    fileprivate func apply(theme: Theme, isInitialApplication: Bool = false) {
+    @MainActor fileprivate func apply(theme: Theme, isInitialApplication: Bool = false) {
         self.applyTheme(theme)
         
         // For the initial application of a ThemeApplier we don't want to apply the other
@@ -526,21 +538,28 @@ extension Array {
 // MARK: - ColorType
 
 internal protocol ColorType {
+    /// Apple have done some odd schenanigans with `UIColor` where some types aren't _actually_ `UIColor` but a special
+    /// type (eg. `UIColor.black` and `UIColor.white` are `UICachedDeviceWhiteColor`), due to this casting to
+    /// `Self` in an extension on `UIColor` ends up failing (because calling `alpha(_)` on a `UICachedDeviceWhiteColor`
+    /// expects you to return a `UICachedDeviceWhiteColor`, but the alpha-applied output is a standard `UIColor` which can't
+    /// convert to `Self`), by defining an explicit `BaseColorType` we return an explicit type and avoid weird private types
+    associatedtype BaseColorType
+    
     var isPrimary: Bool { get }
     
-    func alpha(_ alpha: Double) -> Self?
-    func brighten(_ amount: Double) -> Self?
+    func alpha(_ alpha: Double) -> BaseColorType?
+    func brighten(_ amount: Double) -> BaseColorType?
 }
 
 extension UIColor: ColorType {
     internal var isPrimary: Bool { self == UIColor.primary() }
     
-    internal func alpha(_ alpha: Double) -> Self? {
-        return self.withAlphaComponent(CGFloat(alpha)) as? Self
+    internal func alpha(_ alpha: Double) -> UIColor? {
+        return self.withAlphaComponent(CGFloat(alpha))
     }
     
-    internal func brighten(_ amount: Double) -> Self? {
-        return self.brighten(by: amount) as? Self
+    internal func brighten(_ amount: Double) -> UIColor? {
+        return self.brighten(by: amount)
     }
 }
 

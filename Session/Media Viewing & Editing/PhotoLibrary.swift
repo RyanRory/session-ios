@@ -47,18 +47,9 @@ class PhotoPickerAssetItem: PhotoGridItem {
 
     // MARK: PhotoGridItem
 
-    var type: PhotoGridItemType {
-        if asset.mediaType == .video {
-            return .video
-        }
-
-        // TODO show GIF badge?
-
-        return  .photo
-    }
-    
+    var isVideo: Bool { asset.mediaType == .video }
     var source: ImageDataManager.DataSource {
-        return .closureThumbnail(self.asset.localIdentifier, size) { [photoCollectionContents, asset, size, pixelDimension] in
+        return .asyncSource(self.asset.localIdentifier) { [photoCollectionContents, asset, size, pixelDimension] in
             await photoCollectionContents.requestThumbnail(
                 for: asset,
                 size: size,
@@ -148,44 +139,70 @@ class PhotoCollectionContents {
 
     // MARK: ImageManager
     
-    func requestThumbnail(for asset: PHAsset, size: ImageDataManager.ThumbnailSize, thumbnailSize: CGSize) async -> UIImage? {
+    func requestThumbnail(for asset: PHAsset, size: ImageDataManager.ThumbnailSize, thumbnailSize: CGSize) async -> ImageDataManager.DataSource? {
         var hasResumed: Bool = false
         
-        return await withCheckedContinuation { [imageManager] continuation in
-            let options = PHImageRequestOptions()
-            
-            switch size {
-                case .small: options.deliveryMode = .opportunistic
-                case .medium, .large: options.deliveryMode = .highQualityFormat
-            }
-            
-            imageManager.requestImage(
-                for: asset,
-                targetSize: thumbnailSize,
-                contentMode: .aspectFill,
-                options: options
-            ) { image, info in
-                guard !hasResumed else { return }
-                guard
-                    info?[PHImageErrorKey] == nil,
-                    (info?[PHImageCancelledKey] as? Bool) != true
-                else {
-                    hasResumed = true
-                    return continuation.resume(returning: nil)
+        /// The `requestImage` function will always return a static thumbnail so if it's an animated image then we need custom
+        /// handling (the default PhotoKit resizing can't resize animated images so we need to return the original file)
+        switch asset.utType?.isAnimated {
+            case .some(true):
+                return await withCheckedContinuation { [imageManager] continuation in
+                    let options = PHImageRequestOptions()
+                    options.deliveryMode = .highQualityFormat
+                    options.isNetworkAccessAllowed = true
+                    
+                    imageManager.requestImageDataAndOrientation(for: asset, options: options) { data, uti, orientation, info in
+                        guard !hasResumed else { return }
+                        
+                        guard let data = data, info?[PHImageErrorKey] == nil else {
+                            hasResumed = true
+                            continuation.resume(returning: nil)
+                            return
+                        }
+                        
+                        // Successfully fetched the data, resume with the animated result
+                        hasResumed = true
+                        continuation.resume(returning: .data(asset.localIdentifier, data))
+                    }
                 }
                 
-                switch size {
-                    case .small: break  // We want the first image, whether it is degraded or not
-                    case .medium, .large:
-                        // For medium and large thumbnails we want the full image so ignore any
-                        // degraded images
-                        guard (info?[PHImageResultIsDegradedKey] as? Bool) != true else { return }
-
+            default:
+                return await withCheckedContinuation { [imageManager] continuation in
+                    let options = PHImageRequestOptions()
+                    
+                    switch size {
+                        case .small: options.deliveryMode = .opportunistic
+                        case .medium, .large: options.deliveryMode = .highQualityFormat
+                    }
+                    
+                    imageManager.requestImage(
+                        for: asset,
+                        targetSize: thumbnailSize,
+                        contentMode: .aspectFill,
+                        options: options
+                    ) { image, info in
+                        guard !hasResumed else { return }
+                        guard
+                            info?[PHImageErrorKey] == nil,
+                            (info?[PHImageCancelledKey] as? Bool) != true
+                        else {
+                            hasResumed = true
+                            return continuation.resume(returning: nil)
+                        }
+                        
+                        switch size {
+                            case .small: break  // We want the first image, whether it is degraded or not
+                            case .medium, .large:
+                                // For medium and large thumbnails we want the full image so ignore any
+                                // degraded images
+                                guard (info?[PHImageResultIsDegradedKey] as? Bool) != true else { return }
+                                
+                        }
+                        
+                        continuation.resume(returning: .image("\(asset.localIdentifier)-\(size)", image))
+                        hasResumed = true
+                    }
                 }
-                
-                continuation.resume(returning: image)
-                hasResumed = true
-            }
         }
     }
 
@@ -238,14 +255,34 @@ class PhotoCollectionContents {
             Future { [weak self] resolver in
                 let options: PHVideoRequestOptions = PHVideoRequestOptions()
                 options.isNetworkAccessAllowed = true
+                options.deliveryMode = .highQualityFormat
                 
-                _ = self?.imageManager.requestExportSession(forVideo: asset, options: options, exportPreset: AVAssetExportPresetMediumQuality) { exportSession, info in
+                self?.imageManager.requestAVAsset(forVideo: asset, options: options) { avAsset, _, info in
                     
                     if let error: Error = info?[PHImageErrorKey] as? Error {
                         return resolver(.failure(error))
                     }
                     
-                    guard let exportSession = exportSession else {
+                    guard let avAsset: AVAsset = avAsset else {
+                        return resolver(Result.failure(PhotoLibraryError.assertionError(description: "avAsset was unexpectedly nil")))
+                    }
+                    
+                    let compatiblePresets = AVAssetExportSession.exportPresets(compatibleWith: avAsset)
+                    var bestExportPreset: String
+                    
+                    if compatiblePresets.contains(AVAssetExportPresetPassthrough) {
+                        bestExportPreset = AVAssetExportPresetPassthrough
+                        Log.debug("[PhotoLibrary] Using Passthrough export preset.")
+                    } else {
+                        bestExportPreset = AVAssetExportPresetHighestQuality
+                        Log.debug("[PhotoLibrary] Passthrough not available. Falling back to HighestQuality export preset.")
+                    }
+                    
+                    if (info?[PHImageCancelledKey] as? Bool) == true {
+                        return resolver(.failure(PhotoLibraryError.assertionError(description: "Video request cancelled")))
+                    }
+                    
+                    guard let exportSession: AVAssetExportSession = AVAssetExportSession(asset: avAsset, presetName: bestExportPreset) else {
                         resolver(Result.failure(PhotoLibraryError.assertionError(description: "exportSession was unexpectedly nil")))
                         return
                     }
@@ -460,5 +497,12 @@ class PhotoLibrary: NSObject, PHPhotoLibraryChangeObserver {
                               hideIfEmpty: true))
 
         return collections
+    }
+}
+
+private extension PHAsset {
+    var utType: UTType? {
+        return (value(forKey: "uniformTypeIdentifier") as? String) // stringlint:ignore
+            .map { UTType($0) }
     }
 }

@@ -5,7 +5,7 @@ import CallKit
 import UserNotifications
 import SessionUIKit
 import SessionMessagingKit
-import SessionSnodeKit
+import SessionNetworkingKit
 import SessionUtilitiesKit
 
 // MARK: - Log.Category
@@ -62,7 +62,8 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
         
         do {
             let mainAppUnreadCount: Int = try performSetup(notificationInfo)
-            notificationInfo = try extractNotificationInfo(notificationInfo, mainAppUnreadCount)
+            notificationInfo = notificationInfo.with(mainAppUnreadCount: mainAppUnreadCount)
+            notificationInfo = try extractNotificationInfo(notificationInfo)
             try setupGroupIfNeeded(notificationInfo)
             
             processedNotification = try processNotification(notificationInfo)
@@ -104,12 +105,10 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
         /// Configure the different targets
         SNUtilitiesKit.configure(
             networkMaxFileSize: Network.maxFileSize,
+            maxValidImageDimention: ImageDataManager.DataSource.maxValidDimension,
             using: dependencies
         )
         SNMessagingKit.configure(using: dependencies)
-        
-        /// The `NotificationServiceExtension` needs custom behaviours for it's notification presenter so set it up here
-        dependencies.set(singleton: .notificationsManager, to: NSENotificationPresenter(using: dependencies))
         
         /// Cache the users secret key
         dependencies.mutate(cache: .general) {
@@ -127,6 +126,12 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
             userEd25519SecretKey: userMetadata.ed25519SecretKey
         )
         dependencies.set(cache: .libSession, to: cache)
+        
+        /// The `NotificationServiceExtension` needs custom behaviours for it's notification presenter so set it up here
+        ///
+        /// **Note:** This **MUST** happen after we have loaded the `libSession` cache as the notification settings are
+        /// stored in there
+        dependencies.set(singleton: .notificationsManager, to: NSENotificationPresenter(using: dependencies))
         
         return userMetadata.unreadCount
     }
@@ -151,8 +156,8 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
     
     // MARK: - Notification Handling
     
-    private func extractNotificationInfo(_ info: NotificationInfo, _ mainAppUnreadCount: Int) throws -> NotificationInfo {
-        let (maybeData, metadata, result) = PushNotificationAPI.processNotification(
+    private func extractNotificationInfo(_ info: NotificationInfo) throws -> NotificationInfo {
+        let (maybeData, metadata, result) = Network.PushNotification.processNotification(
             notificationContent: info.content,
             using: dependencies
         )
@@ -169,7 +174,7 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
                     contentHandler: info.contentHandler,
                     metadata: metadata,
                     data: data,
-                    mainAppUnreadCount: mainAppUnreadCount
+                    mainAppUnreadCount: info.mainAppUnreadCount
                 )
                 
             default: throw NotificationError.processingError(result, metadata)
@@ -274,7 +279,7 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
     private func handleConfigMessage(
         _ notification: ProcessedNotification,
         swarmPublicKey: String,
-        namespace: SnodeAPI.Namespace,
+        namespace: Network.SnodeAPI.Namespace,
         serverHash: String,
         serverTimestampMs: Int64,
         data: Data
@@ -801,7 +806,7 @@ public final class NotificationServiceExtension: UNNotificationServiceExtension 
 //            // TODO: [Database Relocation] Need to de-database the 'preparedSubscribe' call for this to work (neeeds the AuthMethod logic to be de-databased)
 //            /// Since this is an API call we need to wait for it to complete before we trigger the `completeSilently` logic
 //            Log.info(.cat, "Group invitation was auto-approved, attempting to subscribe for PNs.")
-//            try? PushNotificationAPI
+//            try? Network.PushNotification
 //                .preparedSubscribe(
 //                    db,
 //                    token: Data(hex: token),
@@ -1279,7 +1284,7 @@ private extension NotificationServiceExtension {
         let content: UNMutableNotificationContent
         let requestId: String
         let contentHandler: ((UNNotificationContent) -> Void)
-        let metadata: PushNotificationAPI.NotificationMetadata
+        let metadata: Network.PushNotification.NotificationMetadata
         let data: Data
         let mainAppUnreadCount: Int
         
@@ -1287,7 +1292,8 @@ private extension NotificationServiceExtension {
             requestId: String? = nil,
             content: UNMutableNotificationContent? = nil,
             contentHandler: ((UNNotificationContent) -> Void)? = nil,
-            metadata: PushNotificationAPI.NotificationMetadata? = nil
+            metadata: Network.PushNotification.NotificationMetadata? = nil,
+            mainAppUnreadCount: Int? = nil
         ) -> NotificationInfo {
             return NotificationInfo(
                 content: (content ?? self.content),
@@ -1295,7 +1301,7 @@ private extension NotificationServiceExtension {
                 contentHandler: (contentHandler ?? self.contentHandler),
                 metadata: (metadata ?? self.metadata),
                 data: data,
-                mainAppUnreadCount: mainAppUnreadCount
+                mainAppUnreadCount: (mainAppUnreadCount ?? self.mainAppUnreadCount)
             )
         }
     }
@@ -1310,8 +1316,8 @@ private extension NotificationServiceExtension {
     
     enum NotificationError: Error {
         case notReadyForExtension
-        case processingErrorWithFallback(PushNotificationAPI.ProcessResult, PushNotificationAPI.NotificationMetadata)
-        case processingError(PushNotificationAPI.ProcessResult, PushNotificationAPI.NotificationMetadata)
+        case processingErrorWithFallback(Network.PushNotification.ProcessResult, Network.PushNotification.NotificationMetadata)
+        case processingError(Network.PushNotification.ProcessResult, Network.PushNotification.NotificationMetadata)
         case timeout
     }
 }

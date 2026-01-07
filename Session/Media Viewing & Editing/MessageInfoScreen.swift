@@ -2,7 +2,7 @@
 
 import SwiftUI
 import SessionUIKit
-import SessionSnodeKit
+import SessionNetworkingKit
 import SessionUtilitiesKit
 import SessionMessagingKit
 
@@ -183,7 +183,7 @@ struct MessageInfoScreen: View {
                                 spacing: Values.mediumSpacing
                             ) {
                                 InfoBlock(title: "attachmentsFileId".localized()) {
-                                    Text(attachment.downloadUrl.map { Attachment.fileId(for: $0) } ?? "")
+                                    Text(attachment.downloadUrl.map { Network.FileServer.fileId(for: $0) } ?? "")
                                         .font(.system(size: Values.mediumFontSize))
                                         .foregroundColor(themeColor: .textPrimary)
                                 }
@@ -456,7 +456,12 @@ struct MessageBubble: View {
     
     var body: some View {
         ZStack {
-            let maxWidth: CGFloat = (VisibleMessageCell.getMaxWidth(for: messageViewModel) - 2 * Self.inset)
+            let maxWidth: CGFloat = (
+                VisibleMessageCell.getMaxWidth(
+                    for: messageViewModel,
+                    cellWidth: UIScreen.main.bounds.width
+                ) - 2 * Self.inset
+            )
             
             VStack(
                 alignment: .leading,

@@ -25,6 +25,26 @@ enum AppIcon: String, CaseIterable {
     var previewImageName: String { "\(rawValue)-Preview" }
     
     // stringlint:ignore_contents
+    var accessibilityIdentifier: String {
+        switch self {
+        case .session:
+            "Session option"
+        case .weather:
+            "Weather option"
+        case .stocks:
+            "Stocks option"
+        case .news:
+            "News option"
+        case .notes:
+            "Notes option"
+        case .meetings:
+            "Meetings option"
+        case .calculator:
+            "Calculator option"
+        }
+    }
+    
+    // stringlint:ignore_contents
     init(name: String?) {
         switch name {
             case "AppIcon-Weather": self = .weather
@@ -132,9 +152,11 @@ class AppIconViewModel: SessionTableViewModel, NavigatableStateHolder, Observabl
                                 oldValue: (previous != nil)
                             ),
                             onTap: { [weak self] in
+                                let lastSelected: String? = dependencies[defaults: .standard, key: .lastSelectedAppIconDisguise]
+                                
                                 switch current {
                                     case .some: self?.updateAppIcon(nil)
-                                    case .none: self?.updateAppIcon(.weather)
+                                    case .none: self?.updateAppIcon(lastSelected.map { AppIcon(name: $0) } ?? .weather)
                                 }
                             }
                         )
@@ -168,5 +190,11 @@ class AppIconViewModel: SessionTableViewModel, NavigatableStateHolder, Observabl
         }
         
         selectedOptionsSubject.send(icon?.rawValue)
+        
+        // Only store custom icons
+        if let currentIconName = icon?.rawValue {
+            // Save latest app icon disguise selected
+            dependencies[defaults: .standard, key: .lastSelectedAppIconDisguise] = currentIconName
+        }
     }
 }

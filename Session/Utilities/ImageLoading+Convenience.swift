@@ -69,10 +69,11 @@ public extension ImageDataManager.DataSource {
 // MARK: - ImageDataManagerType Convenience
 
 public extension ImageDataManagerType {
+    @MainActor
     func loadImage(
         attachment: Attachment,
         using dependencies: Dependencies,
-        onComplete: @escaping (ImageDataManager.ProcessedImageData?) -> Void = { _ in }
+        onComplete: @MainActor @escaping (ImageDataManager.ProcessedImageData?) -> Void = { _ in }
     ) {
         guard let source: ImageDataManager.DataSource = ImageDataManager.DataSource.from(
             attachment: attachment,
@@ -82,11 +83,12 @@ public extension ImageDataManagerType {
         load(source, onComplete: onComplete)
     }
     
+    @MainActor
     func loadThumbnail(
         size: ImageDataManager.ThumbnailSize,
         attachment: Attachment,
         using dependencies: Dependencies,
-        onComplete: @escaping (ImageDataManager.ProcessedImageData?) -> Void = { _ in }
+        onComplete: @MainActor @escaping (ImageDataManager.ProcessedImageData?) -> Void = { _ in }
     ) {
         guard let source: ImageDataManager.DataSource = ImageDataManager.DataSource.thumbnailFrom(
             attachment: attachment,
@@ -95,34 +97,6 @@ public extension ImageDataManagerType {
         ) else { return onComplete(nil) }
         
         load(source, onComplete: onComplete)
-    }
-    // TODO: Is this needeed????
-    func cachedImage(
-        attachment: Attachment,
-        using dependencies: Dependencies
-    ) -> UIImage? {
-        guard let source: ImageDataManager.DataSource = ImageDataManager.DataSource.from(
-            attachment: attachment,
-            using: dependencies
-        ) else { return nil }
-        
-        let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
-        var result: ImageDataManager.ProcessedImageData? = nil
-        
-        load(source) { imageData in
-            result = imageData
-            semaphore.signal()
-        }
-        
-        /// We don't really want to wait at all but it's async logic so give it a very time timeout so it has the chance
-        /// to deal with other logic running
-        _ = semaphore.wait(timeout: .now() + .milliseconds(10))
-        
-        switch result?.type {
-            case .staticImage(let image): return image
-            case .animatedImage(let frames, _): return frames.first
-            case .none: return nil
-        }
     }
 }
 
@@ -130,7 +104,7 @@ public extension ImageDataManagerType {
 
 public extension SessionImageView {
     @MainActor
-    func loadImage(from path: String, onComplete: ((Bool) -> Void)? = nil) {
+    func loadImage(from path: String, onComplete: (@MainActor (ImageDataManager.ProcessedImageData?) -> Void)? = nil) {
         loadImage(.url(URL(fileURLWithPath: path)), onComplete: onComplete)
     }
     
@@ -138,13 +112,13 @@ public extension SessionImageView {
     func loadImage(
         attachment: Attachment,
         using dependencies: Dependencies,
-        onComplete: ((Bool) -> Void)? = nil
+        onComplete: (@MainActor (ImageDataManager.ProcessedImageData?) -> Void)? = nil
     ) {
         guard let source: ImageDataManager.DataSource = ImageDataManager.DataSource.from(
             attachment: attachment,
             using: dependencies
         ) else {
-            onComplete?(false)
+            onComplete?(nil)
             return
         }
         
@@ -156,14 +130,14 @@ public extension SessionImageView {
         size: ImageDataManager.ThumbnailSize,
         attachment: Attachment,
         using dependencies: Dependencies,
-        onComplete: ((Bool) -> Void)? = nil
+        onComplete: (@MainActor (ImageDataManager.ProcessedImageData?) -> Void)? = nil
     ) {
         guard let source: ImageDataManager.DataSource = ImageDataManager.DataSource.thumbnailFrom(
             attachment: attachment,
             size: size,
             using: dependencies
         ) else {
-            onComplete?(false)
+            onComplete?(nil)
             return
         }
         
@@ -171,7 +145,7 @@ public extension SessionImageView {
     }
     
     @MainActor
-    func loadPlaceholder(seed: String, text: String, size: CGFloat, onComplete: ((Bool) -> Void)? = nil) {
+    func loadPlaceholder(seed: String, text: String, size: CGFloat, onComplete: (@MainActor (ImageDataManager.ProcessedImageData?) -> Void)? = nil) {
         loadImage(.placeholderIcon(seed: seed, text: text, size: size), onComplete: onComplete)
     }
 }
