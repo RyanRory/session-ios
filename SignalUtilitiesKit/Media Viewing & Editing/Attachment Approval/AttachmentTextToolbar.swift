@@ -90,7 +90,7 @@ class AttachmentTextToolbar: UIView, UITextViewDelegate {
     }()
     
     private lazy var sessionProBadge: SessionProBadge = {
-        let result: SessionProBadge = SessionProBadge(size: .small)
+        let result: SessionProBadge = SessionProBadge(size: .medium)
         result.isHidden = !dependencies[feature: .sessionProEnabled] || dependencies[cache: .libSession].isSessionPro
         
         return result
@@ -214,5 +214,5 @@ extension AttachmentTextToolbar: InputTextViewDelegate {
         delegate?.attachmentTextToolbarDidChange(self)
     }
     
-    @MainActor func didPasteImageFromPasteboard(_ inputTextView: InputTextView, image: UIImage) {}
+    @MainActor func didPasteImageDataFromPasteboard(_ inputTextView: InputTextView, imageData: Data) {}
 }

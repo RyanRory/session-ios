@@ -55,8 +55,9 @@ public struct Profile: Codable, Sendable, Identifiable, Equatable, Hashable, Fet
     public let blocksCommunityMessageRequests: Bool?
     
     /// The Pro Proof for when this profile is updated
-    // TODO: Implement this when the structure of Session Pro Proof is determined
+    // TODO: Implement these when the structure of Session Pro Proof is determined
     public let sessionProProof: String?
+    public var showProBadge: Bool?
     
     // MARK: - Initialization
     
@@ -68,7 +69,8 @@ public struct Profile: Codable, Sendable, Identifiable, Equatable, Hashable, Fet
         displayPictureEncryptionKey: Data? = nil,
         profileLastUpdated: TimeInterval? = nil,
         blocksCommunityMessageRequests: Bool? = nil,
-        sessionProProof: String? = nil
+        sessionProProof: String? = nil,
+        showProBadge: Bool? = nil
     ) {
         self.id = id
         self.name = name
@@ -78,6 +80,7 @@ public struct Profile: Codable, Sendable, Identifiable, Equatable, Hashable, Fet
         self.profileLastUpdated = profileLastUpdated
         self.blocksCommunityMessageRequests = blocksCommunityMessageRequests
         self.sessionProProof = sessionProProof
+        self.showProBadge = showProBadge
     }
 }
 
@@ -130,11 +133,11 @@ public extension Profile {
         self = Profile(
             id: try container.decode(String.self, forKey: .id),
             name: try container.decode(String.self, forKey: .name),
-            nickname: try? container.decode(String?.self, forKey: .nickname),
+            nickname: try container.decodeIfPresent(String.self, forKey: .nickname),
             displayPictureUrl: displayPictureUrl,
             displayPictureEncryptionKey: displayPictureKey,
-            profileLastUpdated: try? container.decode(TimeInterval?.self, forKey: .profileLastUpdated),
-            blocksCommunityMessageRequests: try? container.decode(Bool?.self, forKey: .blocksCommunityMessageRequests)
+            profileLastUpdated: try container.decodeIfPresent(TimeInterval.self, forKey: .profileLastUpdated),
+            blocksCommunityMessageRequests: try container.decodeIfPresent(Bool.self, forKey: .blocksCommunityMessageRequests)
         )
     }
     
@@ -190,10 +193,11 @@ public extension Profile {
         _ db: ObservingDatabase,
         id: ID,
         threadVariant: SessionThread.Variant = .contact,
+        suppressId: Bool = false,
         customFallback: String? = nil
     ) -> String {
         let existingDisplayName: String? = (try? Profile.fetchOne(db, id: id))?
-            .displayName(for: threadVariant)
+            .displayName(for: threadVariant, suppressId: suppressId)
         
         return (existingDisplayName ?? (customFallback ?? id))
     }
@@ -201,10 +205,11 @@ public extension Profile {
     static func displayNameNoFallback(
         _ db: ObservingDatabase,
         id: ID,
-        threadVariant: SessionThread.Variant = .contact
+        threadVariant: SessionThread.Variant = .contact,
+        suppressId: Bool = false
     ) -> String? {
         return (try? Profile.fetchOne(db, id: id))?
-            .displayName(for: threadVariant)
+            .displayName(for: threadVariant, suppressId: suppressId)
     }
     
     // MARK: - Fetch or Create
@@ -218,7 +223,8 @@ public extension Profile {
             displayPictureEncryptionKey: nil,
             profileLastUpdated: nil,
             blocksCommunityMessageRequests: nil,
-            sessionProProof: nil
+            sessionProProof: nil,
+            showProBadge: nil
         )
     }
     
@@ -241,13 +247,14 @@ public extension Profile {
     static func displayName(
         id: ID,
         threadVariant: SessionThread.Variant = .contact,
+        suppressId: Bool = false,
         customFallback: String? = nil,
         using dependencies: Dependencies
     ) -> String {
         let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var displayName: String?
         dependencies[singleton: .storage].readAsync(
-            retrieve: { db in Profile.displayName(db, id: id, threadVariant: threadVariant) },
+            retrieve: { db in Profile.displayName(db, id: id, threadVariant: threadVariant, suppressId: suppressId) },
             completion: { result in
                 switch result {
                     case .failure: break
@@ -264,12 +271,13 @@ public extension Profile {
     static func displayNameNoFallback(
         id: ID,
         threadVariant: SessionThread.Variant = .contact,
+        suppressId: Bool = false,
         using dependencies: Dependencies
     ) -> String? {
         let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
         var displayName: String?
         dependencies[singleton: .storage].readAsync(
-            retrieve: { db in Profile.displayNameNoFallback(db, id: id, threadVariant: threadVariant) },
+            retrieve: { db in Profile.displayNameNoFallback(db, id: id, threadVariant: threadVariant, suppressId: suppressId) },
             completion: { result in
                 switch result {
                     case .failure: break
@@ -403,6 +411,7 @@ public extension ProfileAssociated {
 public extension FetchRequest where RowDecoder: FetchableRecord & ProfileAssociated {
     func fetchAllWithProfiles(_ db: ObservingDatabase, using dependencies: Dependencies) throws -> [WithProfile<RowDecoder>] {
         let originalResult: [RowDecoder] = try self.fetchAll(db)
+        
         let profiles: [String: Profile]? = try? Profile
             .fetchAll(db, ids: originalResult.map { $0.profileId }.asSet())
             .reduce(into: [:]) { result, next in result[next.id] = next }
@@ -422,17 +431,20 @@ public extension FetchRequest where RowDecoder: FetchableRecord & ProfileAssocia
 public extension Profile {
     func with(
         name: String? = nil,
-        nickname: String?? = nil,
-        displayPictureUrl: String?? = nil
+        nickname: Update<String?> = .useExisting,
+        displayPictureUrl: Update<String?> = .useExisting,
+        displayPictureEncryptionKey: Update<Data?> = .useExisting,
+        profileLastUpdated: Update<TimeInterval?> = .useExisting,
+        blocksCommunityMessageRequests: Update<Bool?> = .useExisting
     ) -> Profile {
         return Profile(
             id: id,
             name: (name ?? self.name),
-            nickname: (nickname ?? self.nickname),
-            displayPictureUrl: (displayPictureUrl ?? self.displayPictureUrl),
-            displayPictureEncryptionKey: displayPictureEncryptionKey,
-            profileLastUpdated: profileLastUpdated,
-            blocksCommunityMessageRequests: blocksCommunityMessageRequests,
+            nickname: nickname.or(self.nickname),
+            displayPictureUrl: displayPictureUrl.or(self.displayPictureUrl),
+            displayPictureEncryptionKey: displayPictureEncryptionKey.or(self.displayPictureEncryptionKey),
+            profileLastUpdated: profileLastUpdated.or(self.profileLastUpdated),
+            blocksCommunityMessageRequests: blocksCommunityMessageRequests.or(self.blocksCommunityMessageRequests),
             sessionProProof: self.sessionProProof
         )
     }

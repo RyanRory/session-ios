@@ -1,6 +1,7 @@
 // Copyright © 2022 Rangeproof Pty Ltd. All rights reserved.
 
 import Foundation
+import PhotosUI
 import Combine
 import Lucide
 import GRDB
@@ -17,12 +18,13 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     public let observableState: ObservableTableSourceState<Section, TableItem> = ObservableTableSourceState()
     
     private var updatedName: String?
-    private var onDisplayPictureSelected: ((ConfirmationModal.ValueUpdate) -> Void)?
+    private var onDisplayPictureSelected: ((ImageDataManager.DataSource, CGRect?) -> Void)?
     private lazy var imagePickerHandler: ImagePickerHandler = ImagePickerHandler(
         onTransition: { [weak self] in self?.transitionToScreen($0, transitionType: $1) },
-        onImageDataPicked: { [weak self] identifier, resultImageData in
-            self?.onDisplayPictureSelected?(.image(identifier: identifier, data: resultImageData))
-        }
+        onImagePicked: { [weak self] source, cropRect in
+            self?.onDisplayPictureSelected?(source, cropRect)
+        },
+        using: dependencies
     )
     
     /// This value is the current state of the view
@@ -33,7 +35,10 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     
     @MainActor init(using dependencies: Dependencies) {
         self.dependencies = dependencies
-        self.internalState = State.initialState(userSessionId: dependencies[cache: .general].sessionId)
+        self.internalState = State.initialState(
+            userSessionId: dependencies[cache: .general].sessionId,
+            isSessionPro: dependencies[cache: .libSession].isSessionPro
+        )
         
         bindState()
     }
@@ -42,6 +47,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     
     enum NavItem: Equatable {
         case close
+        case edit
         case qrCode
     }
     
@@ -49,8 +55,8 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
         case profileInfo
         case sessionId
         
-        case donationAndCommunity
-        case network
+        case sessionProAndCommunity
+        case donationAndnetwork
         case settings
         case helpAndData
         
@@ -66,7 +72,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
         var style: SessionTableSectionStyle {
             switch self {
                 case .sessionId: return .titleSeparator
-                case .donationAndCommunity, .network, .settings, .helpAndData: return .padding
+                case .sessionProAndCommunity, .donationAndnetwork, .settings, .helpAndData: return .padding
                 default: return .none
             }
         }
@@ -79,9 +85,10 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
         case sessionId
         case idActions
         
-        case donate
+        case sessionPro
         case inviteAFriend
         
+        case donate
         case path
         case sessionNetwork
         
@@ -112,7 +119,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     lazy var rightNavItems: AnyPublisher<[SessionNavItem<NavItem>], Never> = [
         SessionNavItem(
             id: .qrCode,
-            image: UIImage(named: "QRCode")?
+            image: Lucide.image(icon: .qrCode, size: 24)?
                 .withRenderingMode(.alwaysTemplate),
             style: .plain,
             accessibilityIdentifier: "View QR code",
@@ -123,6 +130,24 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 viewController.setNavBarTitle("qrCode".localized())
                 self?.transitionToScreen(viewController)
             }
+        ),
+        SessionNavItem(
+            id: .edit,
+            image: Lucide.image(icon: .pencil, size: 22)?
+                .withRenderingMode(.alwaysTemplate),
+            style: .plain,
+            accessibilityIdentifier: "Edit Profile Name",
+            action: { [weak self] in
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
+                    self.transitionToScreen(
+                        ConfirmationModal(
+                            info: self.updateDisplayName(current: self.internalState.profile.displayName())
+                        ),
+                        transitionType: .present
+                    )
+                }
+            }
         )
     ]
     
@@ -131,6 +156,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     public struct State: ObservableKeyProvider {
         let userSessionId: SessionId
         let profile: Profile
+        let isSessionPro: Bool
         let serviceNetwork: ServiceNetwork
         let forceOffline: Bool
         let developerModeEnabled: Bool
@@ -145,15 +171,18 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 .profile(userSessionId.hexString),
                 .feature(.serviceNetwork),
                 .feature(.forceOffline),
+                .feature(.mockCurrentUserSessionPro),
                 .setting(.developerModeEnabled),
                 .setting(.hideRecoveryPasswordPermanently)
+                // TODO: [PRO] Need to observe changes to the users pro status
             ]
         }
         
-        static func initialState(userSessionId: SessionId) -> State {
+        static func initialState(userSessionId: SessionId, isSessionPro: Bool) -> State {
             return State(
                 userSessionId: userSessionId,
                 profile: Profile.defaultFor(userSessionId.hexString),
+                isSessionPro: isSessionPro,
                 serviceNetwork: .mainnet,
                 forceOffline: false,
                 developerModeEnabled: false,
@@ -187,6 +216,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     ) async -> State {
         /// Store mutable copies of the data to update
         var profile: Profile = previousState.profile
+        var isSessionPro: Bool = previousState.isSessionPro
         var serviceNetwork: ServiceNetwork = previousState.serviceNetwork
         var forceOffline: Bool = previousState.forceOffline
         var developerModeEnabled: Bool = previousState.developerModeEnabled
@@ -203,6 +233,17 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
             }
         }
         
+        /// If the users profile picture doesn't exist on disk then clear out the value (that way if we get events after downloading
+        /// it then then there will be a diff in the `State` and the UI will update
+        if
+            let displayPictureUrl: String = profile.displayPictureUrl,
+            let filePath: String = try? dependencies[singleton: .displayPictureManager]
+                .path(for: displayPictureUrl),
+            !dependencies[singleton: .fileManager].fileExists(atPath: filePath)
+        {
+            profile = profile.with(displayPictureUrl: .set(to: nil))
+        }
+        
         /// Process any event changes
         let groupedEvents: [GenericObservableKey: Set<ObservedEvent>]? = events
             .reduce(into: [:]) { result, event in
@@ -211,8 +252,8 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
         groupedEvents?[.profile]?.forEach { event in
             switch (event.value as? ProfileEvent)?.change {
                 case .name(let name): profile = profile.with(name: name)
-                case .nickname(let nickname): profile = profile.with(nickname: nickname)
-                case .displayPictureUrl(let url): profile = profile.with(displayPictureUrl: url)
+                case .nickname(let nickname): profile = profile.with(nickname: .set(to: nickname))
+                case .displayPictureUrl(let url): profile = profile.with(displayPictureUrl: .set(to: url))
                 default: break
             }
         }
@@ -236,12 +277,18 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 
                 forceOffline = updatedValue
             }
+            else if event.key == .feature(.mockCurrentUserSessionPro) {
+                guard let updatedValue: Bool = event.value as? Bool else { return }
+                
+                isSessionPro = updatedValue
+            }
         }
         
         /// Generate the new state
         return State(
             userSessionId: previousState.userSessionId,
             profile: profile,
+            isSessionPro: isSessionPro,
             serviceNetwork: serviceNetwork,
             forceOffline: forceOffline,
             developerModeEnabled: developerModeEnabled,
@@ -263,13 +310,17 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                             switch (state.serviceNetwork, state.forceOffline) {
                                 case (.testnet, false): return .letter("T", false)     // stringlint:ignore
                                 case (.testnet, true): return .letter("T", true)       // stringlint:ignore
-                                default: return .none
+                                default: return (state.profile.displayPictureUrl?.isEmpty == false) ? .pencil : .rightPlus
                             }
                         }()
                     ),
                     styling: SessionCell.StyleInfo(
                         alignment: .centerHugging,
-                        customPadding: SessionCell.Padding(bottom: Values.smallSpacing),
+                        customPadding: SessionCell.Padding(
+                            top: 0,
+                            leading: 0,
+                            bottom: Values.smallSpacing
+                        ),
                         backgroundStyle: .noBackground
                     ),
                     accessibility: Accessibility(
@@ -285,18 +336,16 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                     title: SessionCell.TextInfo(
                         state.profile.displayName(),
                         font: .titleLarge,
-                        alignment: .center
-                    ),
-                    trailingAccessory: .icon(
-                        .pencil,
-                        size: .small,
-                        customTint: .textSecondary
+                        alignment: .center,
+                        trailingImage: (state.isSessionPro ?
+                            ("ProBadge", { SessionProBadge(size: .medium).toImage(using: viewModel.dependencies) }) :
+                            nil
+                        )
                     ),
                     styling: SessionCell.StyleInfo(
                         alignment: .centerHugging,
                         customPadding: SessionCell.Padding(
                             top: Values.smallSpacing,
-                            leading: IconSize.small.size,
                             bottom: Values.mediumSpacing,
                             interItem: 0
                         ),
@@ -367,20 +416,16 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 )
             ]
         )
-        let donationAndCommunity: SectionModel = SectionModel(
-            model: .donationAndCommunity,
+        let sessionProAndCommunity: SectionModel = SectionModel(
+            model: .sessionProAndCommunity,
             elements: [
                 SessionCell.Info(
-                    id: .donate,
-                    leadingAccessory: .icon(
-                        .heart,
-                        customTint: .sessionButton_border
-                    ),
-                    title: "donate".localized(),
-                    styling: SessionCell.StyleInfo(
-                        tintColor: .sessionButton_border
-                    ),
-                    onTap: { [weak viewModel] in viewModel?.openDonationsUrl() }
+                    id: .sessionPro,
+                    leadingAccessory: .proBadge(size: .small),
+                    title: Constants.app_pro,
+                    onTap: { [weak viewModel] in
+                        // TODO: Implement
+                    }
                 ),
                 SessionCell.Info(
                     id: .inviteAFriend,
@@ -404,9 +449,18 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 )
             ]
         )
-        let network: SectionModel = SectionModel(
-            model: .network,
+        let donationAndNetwork: SectionModel = SectionModel(
+            model: .donationAndnetwork,
             elements: [
+                SessionCell.Info(
+                    id: .donate,
+                    leadingAccessory: .icon(
+                        .heart,
+                        customTint: .sessionButton_border
+                    ),
+                    title: "donate".localized(),
+                    onTap: { [weak viewModel] in viewModel?.openDonationsUrl() }
+                ),
                 SessionCell.Info(
                     id: .path,
                     leadingAccessory: .custom(
@@ -424,9 +478,6 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                             .withRenderingMode(.alwaysTemplate)
                     ),
                     title: Constants.network_name,
-                    trailingAccessory: .custom(
-                        info: NewTagView.Info()
-                    ),
                     onTap: { [weak viewModel, dependencies = viewModel.dependencies] in
                         let viewController: SessionHostingViewController = SessionHostingViewController(
                             rootView: SessionNetworkScreen(
@@ -579,7 +630,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
             elements: helpAndDataElements
         )
         
-        return [profileInfo, sessionId, donationAndCommunity, network, settings, helpAndData]
+        return [profileInfo, sessionId, sessionProAndCommunity, donationAndNetwork, settings, helpAndData]
     }
     
     public lazy var footerView: AnyPublisher<UIView?, Never> = Just(VersionFooterView(
@@ -627,6 +678,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 self?.updatedName != current
             },
             cancelStyle: .alert_text,
+            hasCloseButton: true,
             dismissOnConfirm: false,
             onConfirm: { [weak self] modal in
                 guard
@@ -652,19 +704,26 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     private func updateProfilePicture(currentUrl: String?) {
         let iconName: String = "profile_placeholder" // stringlint:ignore
         var hasSetNewProfilePicture: Bool = false
-        let body: ConfirmationModal.Info.Body = .image(
-            source: nil,
-            placeholder: currentUrl
+        let currentSource: ImageDataManager.DataSource? = {
+            let source: ImageDataManager.DataSource? = currentUrl
                 .map { try? dependencies[singleton: .displayPictureManager].path(for: $0) }
                 .map { ImageDataManager.DataSource.url(URL(fileURLWithPath: $0)) }
-                .defaulting(to: Lucide.image(icon: .image, size: 40).map { image in
+            
+            return (source?.contentExists == true ? source : nil)
+        }()
+        let body: ConfirmationModal.Info.Body = .image(
+            source: nil,
+            placeholder: (
+                currentSource ??
+                Lucide.image(icon: .image, size: 40).map { image in
                     ImageDataManager.DataSource.image(
                         iconName,
                         image
                             .withTintColor(#colorLiteral(red: 0.631372549, green: 0.6352941176, blue: 0.631372549, alpha: 1), renderingMode: .alwaysTemplate)
                             .withCircularBackground(backgroundColor: #colorLiteral(red: 0.1764705882, green: 0.1764705882, blue: 0.1764705882, alpha: 1))
                     )
-                }),
+                }
+            ),
             icon: (currentUrl != nil ? .pencil : .rightPlus),
             style: .circular,
             description: {
@@ -676,7 +735,8 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                             at: .leading,
                             font: .systemFont(ofSize: Values.smallFontSize),
                             textColor: .textSecondary,
-                            proBadgeSize: .small
+                            proBadgeSize: .small,
+                            using: dependencies
                         ):
                     "proAnimatedDisplayPicturesNonProModalDescription"
                         .localized()
@@ -684,7 +744,8 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                             at: .trailing,
                             font: .systemFont(ofSize: Values.smallFontSize),
                             textColor: .textSecondary,
-                            proBadgeSize: .small
+                            proBadgeSize: .small,
+                            using: dependencies
                         )
             }(),
             accessibility: Accessibility(
@@ -705,8 +766,13 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                 }
             },
             onClick: { [weak self] onDisplayPictureSelected in
-                self?.onDisplayPictureSelected = { valueUpdate in
-                    onDisplayPictureSelected(valueUpdate)
+                self?.onDisplayPictureSelected = { source, cropRect in
+                    onDisplayPictureSelected(.image(
+                        source: source,
+                        cropRect: cropRect,
+                        replacementIcon: .pencil,
+                        replacementCancelTitle: "clear".localized()
+                    ))
                     hasSetNewProfilePicture = true
                 }
                 self?.showPhotoLibraryForAvatar()
@@ -721,25 +787,23 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                     confirmTitle: "save".localized(),
                     confirmEnabled: .afterChange { info in
                         switch info.body {
-                            case .image(let source, _, _, _, _, _, _, _, _): return (source?.imageData != nil)
+                            case .image(.some(let source), _, _, _, _, _, _, _, _): return source.contentExists
                             default: return false
                         }
                     },
                     cancelTitle: "remove".localized(),
-                    cancelEnabled: (currentUrl != nil) ? .bool(true) : .afterChange { info in
+                    cancelEnabled: (currentUrl != nil ? .bool(true) : .afterChange { info in
                         switch info.body {
-                            case .image(let source, _, _, _, _, _, _, _, _): return (source?.imageData != nil)
+                            case .image(.some(let source), _, _, _, _, _, _, _, _): return source.contentExists
                             default: return false
                         }
-                    },
+                    }),
                     hasCloseButton: true,
                     dismissOnConfirm: false,
                     onConfirm: { [weak self, dependencies] modal in
                         switch modal.info.body {
-                            case .image(.some(let source), _, _, _, _, _, _, _, _):
-                                guard let imageData: Data = source.imageData else { return }
-                            
-                                let isAnimatedImage: Bool = ImageDataManager.isAnimatedImage(imageData)
+                            case .image(.some(let source), _, _, let style, _, _, _, _, _):
+                                let isAnimatedImage: Bool = ImageDataManager.isAnimatedImage(source)
                                 guard (
                                     !isAnimatedImage ||
                                     dependencies[cache: .libSession].isSessionPro ||
@@ -757,9 +821,16 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                                     }
                                     return
                                 }
-                            
+                                
                                 self?.updateProfile(
-                                    displayPictureUpdate: .currentUserUploadImageData(data: imageData, isReupload: false),
+                                    displayPictureUpdateGenerator: { [weak self] in
+                                        guard let self = self else { throw AttachmentError.uploadFailed }
+                                        
+                                        return try await uploadDisplayPicture(
+                                            source: source,
+                                            cropRect: style.cropRect
+                                        )
+                                    },
                                     onComplete: { [weak modal] in modal?.close() }
                                 )
                             
@@ -777,7 +848,7 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
                             hasSetNewProfilePicture = false
                         } else {
                             self?.updateProfile(
-                                displayPictureUpdate: .currentUserRemove,
+                                displayPictureUpdateGenerator: { .currentUserRemove },
                                 onComplete: { [weak modal] in modal?.close() }
                             )
                         }
@@ -791,9 +862,11 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
     @MainActor private func showPhotoLibraryForAvatar() {
         Permissions.requestLibraryPermissionIfNeeded(isSavingMedia: false, using: dependencies) { [weak self] in
             DispatchQueue.main.async {
-                let picker: UIImagePickerController = UIImagePickerController()
-                picker.sourceType = .photoLibrary
-                picker.mediaTypes = [ "public.image" ]  // stringlint:ignore
+                var configuration: PHPickerConfiguration = PHPickerConfiguration()
+                configuration.selectionLimit = 1
+                configuration.filter = .any(of: [.images, .livePhotos])
+                
+                let picker: PHPickerViewController = PHPickerViewController(configuration: configuration)
                 picker.delegate = self?.imagePickerHandler
                 
                 self?.transitionToScreen(picker, transitionType: .present)
@@ -801,55 +874,80 @@ class SettingsViewModel: SessionTableViewModel, NavigationItemSource, Navigatabl
         }
     }
     
+    fileprivate func uploadDisplayPicture(
+        source: ImageDataManager.DataSource,
+        cropRect: CGRect?
+    ) async throws -> DisplayPictureManager.Update {
+        let pendingAttachment: PendingAttachment = PendingAttachment(
+            source: .media(source),
+            using: dependencies
+        )
+        let preparedAttachment: PreparedAttachment = try await dependencies[singleton: .displayPictureManager].prepareDisplayPicture(
+            attachment: pendingAttachment,
+            fallbackIfConversionTakesTooLong: true,
+            cropRect: cropRect
+        )
+        let result = try await dependencies[singleton: .displayPictureManager]
+            .uploadDisplayPicture(preparedAttachment: preparedAttachment)
+        
+        return .currentUserUpdateTo(
+            url: result.downloadUrl,
+            key: result.encryptionKey,
+            sessionProProof: dependencies.mutate(cache: .libSession) { $0.getCurrentUserProProof() },
+            isReupload: false
+        )
+    }
+    
     @MainActor fileprivate func updateProfile(
         displayNameUpdate: Profile.DisplayNameUpdate = .none,
-        displayPictureUpdate: DisplayPictureManager.Update = .none,
+        displayPictureUpdateGenerator generator: @escaping () async throws -> DisplayPictureManager.Update = { .none },
         onComplete: @escaping () -> ()
     ) {
-        let viewController = ModalActivityIndicatorViewController(canCancel: false) { [weak self, dependencies] modalActivityIndicator in
-            Profile
-                .updateLocal(
+        let indicator: ModalActivityIndicatorViewController = ModalActivityIndicatorViewController()
+        self.transitionToScreen(indicator, transitionType: .present)
+        
+        Task.detached(priority: .userInitiated) { [weak self, indicator, dependencies] in
+            var displayPictureUpdate: DisplayPictureManager.Update = .none
+            
+            do {
+                displayPictureUpdate = try await generator()
+                try await Profile.updateLocal(
                     displayNameUpdate: displayNameUpdate,
                     displayPictureUpdate: displayPictureUpdate,
                     using: dependencies
                 )
-                .subscribe(on: DispatchQueue.global(qos: .default), using: dependencies)
-                .receive(on: DispatchQueue.main, using: dependencies)
-                .sinkUntilComplete(
-                    receiveCompletion: { result in
-                        modalActivityIndicator.dismiss {
-                            switch result {
-                                case .finished: onComplete()
-                                case .failure(let error):
-                                    let message: String = {
-                                        switch (displayPictureUpdate, error) {
-                                            case (.currentUserRemove, _): return "profileDisplayPictureRemoveError".localized()
-                                            case (_, .uploadMaxFileSizeExceeded):
-                                                return "profileDisplayPictureSizeError".localized()
-                                            
-                                            default: return "errorConnection".localized()
-                                        }
-                                    }()
-                                    
-                                    self?.transitionToScreen(
-                                        ConfirmationModal(
-                                            info: ConfirmationModal.Info(
-                                                title: "profileErrorUpdate".localized(),
-                                                body: .text(message),
-                                                cancelTitle: "okay".localized(),
-                                                cancelStyle: .alert_text,
-                                                dismissType: .single
-                                            )
-                                        ),
-                                        transitionType: .present
-                                    )
-                            }
-                        }
+                
+                await indicator.dismiss {
+                    onComplete()
+                }
+            }
+            catch {
+                let message: String = {
+                    switch (displayPictureUpdate, error) {
+                        case (.currentUserRemove, _): return "profileDisplayPictureRemoveError".localized()
+                        case (_, AttachmentError.fileSizeTooLarge):
+                            return "profileDisplayPictureSizeError".localized()
+                        
+                        default: return "errorConnection".localized()
                     }
-                )
+                }()
+                
+                await indicator.dismiss {
+                    self?.transitionToScreen(
+                        ConfirmationModal(
+                            info: ConfirmationModal.Info(
+                                title: "profileErrorUpdate".localized(),
+                                body: .text(message),
+                                cancelTitle: "okay".localized(),
+                                cancelStyle: .alert_text,
+                                dismissType: .single
+                            )
+                        ),
+                        transitionType: .present
+                    )
+                }
+            }
         }
-        
-        self.transitionToScreen(viewController, transitionType: .present)
     }
     
     private func copySessionId(_ sessionId: String, button: SessionButton?) {

@@ -21,7 +21,7 @@ extension ContextMenuVC {
         let actionType: ActionType
         let shouldDismissInfoScreen: Bool
         let accessibilityLabel: String?
-        let work: ((() -> Void)?) -> Void
+        let work: @MainActor ((@MainActor () -> Void)?) -> Void
         
         enum ActionType {
             case emoji
@@ -41,7 +41,7 @@ extension ContextMenuVC {
             actionType: ActionType = .generic,
             shouldDismissInfoScreen: Bool = false,
             accessibilityLabel: String? = nil,
-            work: @escaping ((() -> Void)?) -> Void
+            work: @escaping @MainActor ((@MainActor () -> Void)?) -> Void
         ) {
             self.icon = icon
             self.title = title
@@ -66,7 +66,7 @@ extension ContextMenuVC {
 
         static func retry(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?) -> Action {
             return Action(
-                icon: UIImage(systemName: "arrow.triangle.2.circlepath"),
+                icon: Lucide.image(icon: .repeat2, size: 24),
                 title: (cellViewModel.state == .failedToSync ?
                     "resync".localized() :
                     "resend".localized()
@@ -77,17 +77,17 @@ extension ContextMenuVC {
 
         static func reply(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?) -> Action {
             return Action(
-                icon: UIImage(named: "ic_reply"),
+                icon: Dependencies.isRTL ? Lucide.image(icon: .reply, size: 24)?.flippedHorizontally() : Lucide.image(icon: .reply, size: 24),
                 title: "reply".localized(),
                 shouldDismissInfoScreen: true,
                 accessibilityLabel: "Reply to message"
             ) { completion in delegate?.reply(cellViewModel, completion: completion) }
         }
 
-        static func copy(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?) -> Action {
+        static func copy(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?, forMessageInfoScreen: Bool) -> Action {
             return Action(
-                icon: UIImage(named: "ic_copy"),
-                title: "copy".localized(),
+                icon: Lucide.image(icon: .copy, size: 24),
+                title: forMessageInfoScreen ? "messageCopy".localized() : "copy".localized(),
                 feedback: "copied".localized(),
                 accessibilityLabel: "Copy text"
             ) { completion in delegate?.copy(cellViewModel, completion: completion) }
@@ -95,7 +95,7 @@ extension ContextMenuVC {
 
         static func copySessionID(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?) -> Action {
             return Action(
-                icon: UIImage(named: "ic_copy"),
+                icon: Lucide.image(icon: .copy, size: 24),
                 title: "accountIDCopy".localized(),
                 feedback: "copied".localized(),
                 accessibilityLabel: "Copy Session ID"
@@ -118,7 +118,7 @@ extension ContextMenuVC {
 
         static func save(_ cellViewModel: MessageViewModel, _ delegate: ContextMenuActionDelegate?) -> Action {
             return Action(
-                icon: UIImage(named: "ic_download"),
+                icon: Lucide.image(icon: .arrowDownToLine, size: 24),
                 title: "save".localized(),
                 feedback: "saved".localized(),
                 accessibilityLabel: "Save attachment"
@@ -251,7 +251,8 @@ extension ContextMenuVC {
         }()
         let canCopySessionId: Bool = (
             cellViewModel.variant == .standardIncoming &&
-            cellViewModel.threadVariant != .community
+            cellViewModel.threadVariant != .community &&
+            !forMessageInfoScreen
         )
         let canDelete: Bool = (MessageViewModel.DeletionBehaviours.deletionActions(
             for: [cellViewModel],
@@ -291,7 +292,7 @@ extension ContextMenuVC {
         let generatedActions: [Action] = [
             (canRetry ? Action.retry(cellViewModel, delegate) : nil),
             (viewModelCanReply(cellViewModel, using: dependencies) ? Action.reply(cellViewModel, delegate) : nil),
-            (canCopy ? Action.copy(cellViewModel, delegate) : nil),
+            (canCopy ? Action.copy(cellViewModel, delegate, forMessageInfoScreen: forMessageInfoScreen) : nil),
             (canSave ? Action.save(cellViewModel, delegate) : nil),
             (canCopySessionId ? Action.copySessionID(cellViewModel, delegate) : nil),
             (canDelete ? Action.delete(cellViewModel, delegate) : nil),
@@ -316,7 +317,7 @@ extension ContextMenuVC {
 
 protocol ContextMenuActionDelegate {
     func info(_ cellViewModel: MessageViewModel)
-    func retry(_ cellViewModel: MessageViewModel, completion: (() -> Void)?)
+    @MainActor func retry(_ cellViewModel: MessageViewModel, completion: (@MainActor () -> Void)?)
     func reply(_ cellViewModel: MessageViewModel, completion: (() -> Void)?)
     func copy(_ cellViewModel: MessageViewModel, completion: (() -> Void)?)
     func copySessionID(_ cellViewModel: MessageViewModel, completion: (() -> Void)?)

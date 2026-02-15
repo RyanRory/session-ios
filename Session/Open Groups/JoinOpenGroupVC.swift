@@ -82,10 +82,8 @@ final class JoinOpenGroupVC: BaseVC, UIPageViewControllerDataSource, UIPageViewC
         // presentation type is `fullScreen`
         var navBarHeight: CGFloat {
             switch modalPresentationStyle {
-            case .fullScreen:
-                return navigationController?.navigationBar.frame.size.height ?? 0
-            default:
-                return 0
+                case .fullScreen: return (navigationController?.navigationBar.frame.size.height ?? 0)
+                default: return 0
             }
         }
         
@@ -115,7 +113,7 @@ final class JoinOpenGroupVC: BaseVC, UIPageViewControllerDataSource, UIPageViewC
         pageVCView.pin(.bottom, to: .bottom, of: view)
         
         let statusBarHeight: CGFloat = UIApplication.shared.statusBarFrame.size.height
-        let height: CGFloat = ((navigationController?.view.bounds.height ?? 0) - navBarHeight - TabBar.snHeight - statusBarHeight)
+        let height: CGFloat = ((navigationController?.view.bounds.height ?? 0) - (navigationController?.navigationBar.frame.size.height ?? 0) - TabBar.snHeight - statusBarHeight)
         let size: CGSize = CGSize(width: UIScreen.main.bounds.width, height: height)
         enterURLVC.constrainSize(to: size)
         scanQRCodePlaceholderVC.constrainSize(to: size)
@@ -339,10 +337,21 @@ private final class EnterURLVC: UIViewController, UIGestureRecognizerDelegate, O
     private var keyboardTransitionSnapshot2: UIView?
     
     private lazy var urlTextView: SNTextView = {
-        let result: SNTextView = SNTextView(placeholder: "communityEnterUrl".localized())
+        let result: SNTextView = SNTextView(placeholder: "communityEnterUrl".localized()) { [weak self] text in
+            self?.joinButton.isEnabled = !text.isEmpty
+        }
         result.keyboardType = .URL
         result.autocapitalizationType = .none
         result.autocorrectionType = .no
+        
+        return result
+    }()
+    
+    private lazy var joinButton: UIButton = {
+        let result: SessionButton = SessionButton(style: .bordered, size: .large)
+        result.setTitle("join".localized(), for: UIControl.State.normal)
+        result.addTarget(self, action: #selector(joinOpenGroup), for: .touchUpInside)
+        result.isEnabled = false
         
         return result
     }()
@@ -393,10 +402,6 @@ private final class EnterURLVC: UIViewController, UIGestureRecognizerDelegate, O
         view.themeBackgroundColor = .clear
         
         // Next button
-        let joinButton = SessionButton(style: .bordered, size: .large)
-        joinButton.setTitle("join".localized(), for: UIControl.State.normal)
-        joinButton.addTarget(self, action: #selector(joinOpenGroup), for: UIControl.Event.touchUpInside)
-        
         let joinButtonContainer = UIView(
             wrapping: joinButton,
             withInsets: UIEdgeInsets(top: 0, leading: 80, bottom: 0, trailing: 80),

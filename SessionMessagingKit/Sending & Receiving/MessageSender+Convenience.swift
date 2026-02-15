@@ -26,7 +26,7 @@ extension MessageSender {
             message: VisibleMessage.from(
                 db,
                 interaction: interaction,
-                proProof: dependencies.mutate(cache: .libSession, { $0.getProProof() })
+                proProof: dependencies.mutate(cache: .libSession, { $0.getCurrentUserProProof() })
             ),
             threadId: threadId,
             interactionId: interactionId,
@@ -436,7 +436,9 @@ public extension VisibleMessage {
             text: interaction.body,
             attachmentIds: ((try? interaction.attachments.fetchAll(db)) ?? [])
                 .map { $0.id },
-            quote: (try? interaction.quote.fetchOne(db))
+            quote: (try? Quote
+                .filter(Quote.Columns.interactionId == interaction.id)
+                .fetchOne(db))
                 .map { VMQuote.from(quote: $0) },
             linkPreview: linkPreview
                 .map { linkPreview in

@@ -461,7 +461,8 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         titleView.initialSetup(
             with: self.viewModel.initialThreadVariant,
             isNoteToSelf: self.viewModel.threadData.threadIsNoteToSelf,
-            isMessageRequest: (self.viewModel.threadData.threadIsMessageRequest == true)
+            isMessageRequest: (self.viewModel.threadData.threadIsMessageRequest == true),
+            isSessionPro: self.viewModel.threadData.isSessionPro(using: self.viewModel.dependencies)
         )
         
         // Constraints
@@ -796,6 +797,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
                 with: updatedThreadData.displayName,
                 isNoteToSelf: updatedThreadData.threadIsNoteToSelf,
                 isMessageRequest: (updatedThreadData.threadIsMessageRequest == true),
+                isSessionPro: updatedThreadData.isSessionPro(using: viewModel.dependencies),
                 threadVariant: updatedThreadData.threadVariant,
                 mutedUntilTimestamp: updatedThreadData.threadMutedUntilTimestamp,
                 onlyNotifyForMentions: (updatedThreadData.threadOnlyNotifyForMentions == true),
@@ -838,7 +840,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         {
             if updatedThreadData.threadCanWrite == true {
                 self.showInputAccessoryView()
-            } else {
+            } else if updatedThreadData.threadCanWrite == false && updatedThreadData.threadVariant != .community {
                 self.hideInputAccessoryView()
             }
            
@@ -1506,7 +1508,7 @@ final class ConversationVC: BaseVC, LibSessionRespondingViewController, Conversa
         
         // If we explicitly can't write to the thread then the input will be hidden but they keyboard
         // still reports that it takes up size, so just report 0 height in that case
-        if viewModel.threadData.threadCanWrite == false {
+        if viewModel.threadData.threadCanWrite == false && viewModel.threadData.threadVariant != .community {
             keyboardEndFrame = CGRect(
                 x: UIScreen.main.bounds.minX,
                 y: UIScreen.main.bounds.maxY,

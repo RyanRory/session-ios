@@ -6916,6 +6916,39 @@
         }
       }
     },
+    "addAdmin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Add Admin"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Add Admins"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "addAdmins" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7216,6 +7249,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請輸入您要晉升為管理員的使用者的 Account ID。<br/><br/>若要新增多位使用者，請輸入以逗號分隔的每個 Account ID。一次最多可指定 20 個 Account ID。"
+          }
+        }
+      }
+    },
+    "adminCannotBeDemoted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admins cannot be demoted or removed from the group."
           }
         }
       }
@@ -18128,6 +18172,40 @@
         }
       }
     },
+    "admins" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admins"
+          }
+        }
+      }
+    },
+    "adminSelected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Admin Selected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Admins Selected"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "adminSendingPromotion" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19580,6 +19658,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "管理員設定"
+          }
+        }
+      }
+    },
+    "adminStatusYou" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You cannot change your admin status. To leave the group, open the conversation settings and select Leave Group."
           }
         }
       }
@@ -80465,6 +80554,50 @@
         }
       }
     },
+    "cameraAccessDeniedMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{app_name} needs access to your camera to enable video calls, but this permission has been denied. You can’t update your camera permissions during a call.<br/><br/>Would you like to end the call now and enable camera access, or would you like to be reminded after the call?"
+          }
+        }
+      }
+    },
+    "cameraAccessInstructions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To allow camera access, open settings and turn on the Camera permission."
+          }
+        }
+      }
+    },
+    "cameraAccessReminderMessage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "During your last call, you tried to use video but couldn’t because camera access was previously denied. To allow camera access, open settings and turn on the Camera permission."
+          }
+        }
+      }
+    },
+    "cameraAccessRequired" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera Access Required"
+          }
+        }
+      }
+    },
     "cameraErrorNotFound" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -83848,49 +83981,24 @@
         }
       }
     },
-    "cancelPlan" : {
+    "cancelAccess" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planı ləğv et"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zrušit tarif"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel Plan"
+            "value" : "Cancel {pro}"
           }
-        },
-        "fr" : {
+        }
+      }
+    },
+    "cancelProPlan" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Annuler l’abonnement"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonnement annuleren"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anuluj plan"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Скасувати тарифний план"
+            "value" : "Cancel {pro} Plan"
           }
         }
       }
@@ -83901,7 +84009,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel your plan on the {platform} website, using the {platform_account} you signed up for Pro with."
+            "value" : "Cancel on the {platform} website, using the {platform_account} you signed up for {pro} with."
           }
         }
       }
@@ -83912,7 +84020,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cancel your plan on the {platform_store} website, using the {platform_account} you signed up for Pro with."
+            "value" : "Cancel on the {platform_store} website, using the {platform_account} you signed up for {pro} with."
           }
         }
       }
@@ -84555,25 +84663,46 @@
         }
       }
     },
-    "checkingProStatusDescription" : {
+    "checkingProStatusContinue" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} məlumatlarınız yoxlanılır. Bu səhifədəki bəzi məlumatlar, yoxlama tamamlanana qədər qeyri-dəqiq ola bilər."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kontrolují se vaše údaje {pro}. Některé informace na této stránce mohou být nepřesné, dokud kontrola nebude dokončena."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checking your {pro} details. Some information on this page may be inaccurate until this check is complete."
+            "value" : "Checking your {pro} status. You'll be able to continue once this check is complete."
+          }
+        }
+      }
+    },
+    "checkingProStatusDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking your {pro} details. Some actions on this page may be unavailable until this check is complete."
+          }
+        }
+      }
+    },
+    "checkingProStatusEllipsis" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking {pro} Status..."
+          }
+        }
+      }
+    },
+    "checkingProStatusRenew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking your {pro} details. You cannot renew until this check is complete."
           }
         }
       }
@@ -108168,6 +108297,28 @@
         }
       }
     },
+    "confirmPromotion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Promotion"
+          }
+        }
+      }
+    },
+    "confirmPromotionDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure? Admins cannot be demoted or removed from the group."
+          }
+        }
+      }
+    },
     "contactContacts" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -110577,6 +110728,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選取聯絡人"
+          }
+        }
+      }
+    },
+    "contactSelected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Contact Selected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Contacts Selected"
+                }
+              }
+            }
           }
         }
       }
@@ -126657,6 +126831,17 @@
         }
       }
     },
+    "currentBilling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Billing"
+          }
+        }
+      }
+    },
     "currentPassword" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -126712,53 +126897,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поточний пароль"
-          }
-        }
-      }
-    },
-    "currentPlan" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hazırkı plan"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Současný tarif"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Plan"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Forfait actuel"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Huidig abonnement"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obecny plan"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Поточна передплата"
           }
         }
       }
@@ -137845,6 +137983,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您無權刪除他人訊息"
+          }
+        }
+      }
+    },
+    "deleteAttachments" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Delete Selected Attachment"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Delete Selected Attachments"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deleteAttachmentsDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Are you sure you want to delete the selected attachment? The message associated with the attachment will also be deleted."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Are you sure you want to delete the selected attachments? The message associated with the attachments will also be deleted."
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -188998,6 +189202,17 @@
         }
       }
     },
+    "enableCameraAccess" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Camera Access?"
+          }
+        }
+      }
+    },
     "enableNotifications" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -189059,6 +189274,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Показувати сповіщення, коли ви отримуєте нові повідомлення."
+          }
+        }
+      }
+    },
+    "endCallToEnable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Call to Enable"
           }
         }
       }
@@ -189651,7 +189877,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the password you use to unlock Session \r\non startup, not your Recovery Password"
+            "value" : "Enter the password you use to unlock {app_name} on startup, not your Recovery Password"
           }
         }
       }
@@ -189659,22 +189885,10 @@
     "errorCheckingProStatus" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} statusunu yoxlama xətası."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chyba kontroly stavu {pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error checking {pro} status."
+            "value" : "Error checking {pro} status"
           }
         }
       }
@@ -191277,13 +191491,24 @@
         }
       }
     },
-    "errorLoadingProPlan" : {
+    "errorLoadingProAccess" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Error loading {pro} plan"
+            "value" : "Error loading {pro} access"
+          }
+        }
+      }
+    },
+    "errorNoLookupOns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{app_name} was unable to search for this ONS. Please check your network connection and try again."
           }
         }
       }
@@ -191769,6 +191994,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發生不明錯誤。"
+          }
+        }
+      }
+    },
+    "errorUnregisteredOns" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This ONS is not registered. Please check it is correct and try again."
+          }
+        }
+      }
+    },
+    "failedResendInvite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to resend invite to <b>{name}</b> in <b>{group_name}</b>"
+          }
+        }
+      }
+    },
+    "failedResendInviteMultiple" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to resend invite to <b>{name}</b> and <b>{count} others</b> in <b>{group_name}</b>"
+          }
+        }
+      }
+    },
+    "failedResendInviteTwo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to resend invite to <b>{name}</b> and <b>{other_name}</b> in <b>{group_name}</b>"
           }
         }
       }
@@ -211497,6 +211766,39 @@
         }
       }
     },
+    "groupMemberInvitedHistory" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "<b>{name}</b> was invited to join the group. Chat history from the last 14 days was shared."
+          }
+        }
+      }
+    },
+    "groupMemberInvitedHistoryMultiple" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "<b>{name}</b> and <b>{count}</b> others were invited to join the group. Chat history from the last 14 days was shared."
+          }
+        }
+      }
+    },
+    "groupMemberInvitedHistoryTwo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "<b>{name}</b> and <b>{other_name}</b> were invited to join the group. Chat history from the last 14 days was shared."
+          }
+        }
+      }
+    },
     "groupMemberLeft" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -216426,6 +216728,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "<b>您</b> 和 <b>{other_name}</b> 加入了群組。聊天記錄已分享。"
+          }
+        }
+      }
+    },
+    "groupMemberRemoveFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to remove <b>{name}</b> from <b>{group_name}</b>"
+          }
+        }
+      }
+    },
+    "groupMemberRemoveFailedMultiple" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to remove <b>{name}</b> and <b>{count} others</b> from <b>{group_name}</b>"
+          }
+        }
+      }
+    },
+    "groupMemberRemoveFailedOther" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to remove <b>{name}</b> and <b>{other_name}</b> from <b>{group_name}</b>"
           }
         }
       }
@@ -222083,6 +222418,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您是 <b>{group_name}</b> 中唯一的管理員。<br/><br/>沒有管理員，群組成員和設定將無法更改。"
+          }
+        }
+      }
+    },
+    "groupOnlyAdminLeave" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You are the only admin in <b>{group_name}</b>.<br/><br/>Group members and settings cannot be changed without an admin. To leave the group without deleting it, please add a new admin first"
           }
         }
       }
@@ -228168,46 +228514,6 @@
             }
           }
         },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%#@arg1@"
-          },
-          "substitutions" : {
-            "arg1" : {
-              "argNum" : 1,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "few" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele a jejich zprávy"
-                    }
-                  },
-                  "many" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele a jejich zprávy"
-                    }
-                  },
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele a jeho zprávy"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele a jejich zprávy"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
         "cy" : {
           "stringUnit" : {
             "state" : "translated",
@@ -230454,46 +230760,6 @@
                     "stringUnit" : {
                       "state" : "translated",
                       "value" : "Suprimeix usuaris"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%#@arg1@"
-          },
-          "substitutions" : {
-            "arg1" : {
-              "argNum" : 1,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "few" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele"
-                    }
-                  },
-                  "many" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele"
-                    }
-                  },
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "Odstranit uživatele"
                     }
                   }
                 }
@@ -242026,6 +242292,39 @@
         }
       }
     },
+    "inviteContactsPlural" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Invite Contact"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Invite Contacts"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "inviteFailed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -243916,6 +244215,50 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "inviteMembers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Invite Member"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Invite Members"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "inviteNewMemberGroupLink" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite a new member to the group by entering your friend's Account ID, ONS or scanning their QR code {icon}"
           }
         }
       }
@@ -260815,6 +261158,17 @@
         }
       }
     },
+    "manageAdmins" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Admins"
+          }
+        }
+      }
+    },
     "manageMembers" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -265596,6 +265950,40 @@
         }
       }
     },
+    "memberSelected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Member Selected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Members Selected"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "membersGroupPromotionAcceptInvite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Members can only be promoted once they've\r\naccepted an invite to join the group."
+          }
+        }
+      }
+    },
     "membersInvite" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -266071,6 +266459,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "邀請聯絡人"
+          }
+        }
+      }
+    },
+    "membersInviteNoContacts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You don’t have any contacts to invite to this group.<br/>Go back and invite members using their Account ID or ONS."
           }
         }
       }
@@ -270284,6 +270683,17 @@
         }
       }
     },
+    "membersInviteShareMessageHistoryDays" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share message history from last\r\n14 days"
+          }
+        }
+      }
+    },
     "membersInviteShareNewMessagesOnly" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -271238,6 +271648,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "邀請"
+          }
+        }
+      }
+    },
+    "membersNonAdmins" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Members (Non-Admins)"
           }
         }
       }
@@ -279073,6 +279494,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通過輸入你朋友的帳號 ID、ONS 或掃描他們的 QR 碼開始一個新的對話。"
+          }
+        }
+      }
+    },
+    "messageNewDescriptionMobileLink" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start a new conversation by entering your friend's Account ID, ONS or scanning their QR code {icon}"
           }
         }
       }
@@ -299946,6 +300378,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無"
+          }
+        }
+      }
+    },
+    "NoNonAdminsInGroup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no non-admin members in this group."
+          }
+        }
+      }
+    },
+    "nonProLongerMessagesDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send messages up to 10,000 characters in all conversations."
+          }
+        }
+      }
+    },
+    "nonProUnlimitedPinnedDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize chats with unlimited pinned conversations."
           }
         }
       }
@@ -327617,37 +328082,24 @@
         }
       }
     },
-    "onDeviceDescription" : {
+    "onDeviceCancelDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Başda qeydiyyatdan keçdiyiniz {platform_account} hesabına giriş etdiyiniz {device_type} cihazından bu {app_name} hesabını açın. Sonra planınızı {app_pro} ayarları vasitəsilə dəyişdirin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otevřete tento účet {app_name} na zařízení {device_type}, které je přihlášeno do účtu {platform_account}, pomocí kterého jste se původně zaregistrovali. Poté změňte svůj tarif v nastavení {app_pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open this {app_name} account on an {device_type} device logged into the {platform_account} you originally signed up with. Then, change your plan via the {app_pro} settings."
+            "value" : "Open this {app_name} account on an {device_type} device logged into the {platform_account} you originally signed up with. Then, cancel {pro} via the {app_pro} settings."
           }
-        },
-        "fr" : {
+        }
+      }
+    },
+    "onDeviceDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvrez ce compte {app_name} sur un appareil {device_type} connecté au compte {platform_account} avec lequel vous vous êtes inscrit à l'origine. Ensuite, modifiez votre abonnement via les paramètres {app_pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open dit {app_name} account op een {device_type} apparaat waarop je bent aangemeld met het {platform_account} waarmee je je oorspronkelijk hebt geregistreerd. Wijzig vervolgens je abonnement via de instellingen van {app_pro}."
+            "value" : "Open this {app_name} account on an {device_type} device logged into the {platform_account} you originally signed up with. Then, update your {pro} access via the {app_pro} settings."
           }
         }
       }
@@ -330544,6 +330996,17 @@
         }
       }
     },
+    "onLinkedDevice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On a linked device"
+          }
+        }
+      }
+    },
     "onPlatformStoreWebsite" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -332021,6 +332484,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open {platform} Website"
+          }
+        }
+      }
+    },
+    "openSettings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
           }
         }
       }
@@ -354503,6 +354977,237 @@
         }
       }
     },
+    "proAccessActivatedAutoShort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your {pro} access is active!<br/><br/>Your {pro} access will automatically renew for another <b>{current_plan_length}</b> on <b>{date}</b>."
+          }
+        }
+      }
+    },
+    "proAccessActivatedNotAuto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your {pro} access will expire on <b>{date}</b>.<br/><br/>Update your {pro} access now to ensure you automatically renew before your {pro} access expires."
+          }
+        }
+      }
+    },
+    "proAccessActivatesAuto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your {pro} access is active!<br/><br/>Your {pro} access will automatically renew for another<br/><b>{current_plan_length}</b> on <b>{date}</b>. Any updates you make here will take effect at your next renewal."
+          }
+        }
+      }
+    },
+    "proAccessError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{pro} Access Error"
+          }
+        }
+      }
+    },
+    "proAccessExpireDate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your {pro} access will expire on <b>{date}</b>."
+          }
+        }
+      }
+    },
+    "proAccessLoading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{pro} Access Loading"
+          }
+        }
+      }
+    },
+    "proAccessLoadingDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your {pro} access information is still being loaded. You cannot update until this process is complete."
+          }
+        }
+      }
+    },
+    "proAccessLoadingEllipsis" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{pro} access loading..."
+          }
+        }
+      }
+    },
+    "proAccessNetworkLoadError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to connect to the network to load your {pro} access information. Updating {pro} via {app_name} will be disabled until connectivity is restored.<br/><br/>Please check your network connection and retry."
+          }
+        }
+      }
+    },
+    "proAccessNotFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{pro} Access Not Found"
+          }
+        }
+      }
+    },
+    "proAccessNotFoundDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{app_name} detected that your account does not have {pro} access. If you believe this is a mistake, please reach out to {app_name} support for assistance."
+          }
+        }
+      }
+    },
+    "proAccessRecover" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recover {pro} Access"
+          }
+        }
+      }
+    },
+    "proAccessRenew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew {pro} Access"
+          }
+        }
+      }
+    },
+    "proAccessRenewDesktop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currently, {pro} access can only be purchased and renewed via the {platform_store} or {platform_store_other}. Because you are using {app_name} Desktop, you're not able to renew here.<br/><br/>{app_name} developers are working hard on alternative payment options to allow users to purchase {pro} access outside of the {platform_store} and {platform_store_other}. <b>{pro} Roadmap</b> {icon}"
+          }
+        }
+      }
+    },
+    "proAccessRenewPlatformStoreWebsite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew your {pro} access on the <b><span>{platform_store} website</span></b> using the {platform_account} you signed up for {pro} with."
+          }
+        }
+      }
+    },
+    "proAccessRenewPlatformWebsite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew on the <b><span>{platform} website</span></b> using the {platform_account} you signed up for {pro} with."
+          }
+        }
+      }
+    },
+    "proAccessRenewStart" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew your {pro} access to start using powerful {app_pro} Beta features again."
+          }
+        }
+      }
+    },
+    "proAccessRestored" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{pro} Access Recovered"
+          }
+        }
+      }
+    },
+    "proAccessRestoredDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "{app_name} detected and recovered {pro} access for your account. Your {pro} status has been restored!"
+          }
+        }
+      }
+    },
+    "proAccessSignUp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Because you originally signed up for {app_pro} via the <b>{platform_store}</b>, you'll need to use your {platform_account} to update your {pro} access."
+          }
+        }
+      }
+    },
+    "proAccessUpgradeDesktop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currently, {pro} access can only be purchased via the {platform_store} or {platform_store_other}. Because you are using {app_name} Desktop, you're not able to upgrade to {pro} here.<br/><br/>{app_name} developers are working hard on alternative payment options to allow users to purchase {pro} access outside of the {platform_store} and {platform_store_other}. <b>{pro} Roadmap</b> {icon}"
+          }
+        }
+      }
+    },
     "proActivated" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -354678,46 +355383,10 @@
     "proAllSetDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınız güncəlləndi! Hazırkı {pro} planınız avtomatik olaraq <b>{date}</b> tarixində yeniləndiyi zaman ödəniş haqqı alınacaq."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} byl aktualizován! Účtování proběhne při automatickém obnovení vašeho aktuálního tarifu {pro} dne <b>{date}</b>."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your {app_pro} plan was updated! You will be billed when your current {pro} plan is automatically renewed on <b>{date}</b>."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre forfait {app_pro} a été mis à jour ! Vous serez facturé lorsque votre forfait {pro} actuel sera automatiquement renouvelé le <b>{date}</b>."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement is bijgewerkt! Je wordt gefactureerd wanneer je huidige {pro} abonnement automatisch wordt verlengd op <b>{date}</b>."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} został zaktualizowany! Opłata zostanie pobrana, kiedy Twój obecny plan {pro} odnowi się automatycznie <b>{date}</b>."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Твою підписку {app_pro} оновлено. <b>{date}</b> коли підписку {pro} буде подовжено, тоді й стягнуть гроші."
+            "value" : "Your {app_pro} access was updated! You will be billed when {pro} is automatically renewed on <b>{date}</b>."
           }
         }
       }
@@ -355609,12 +356278,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "{pro}, <b>{time}</b> tarixində avto-yenilənir"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} se automaticky obnoví za <b>{time}</b>"
           }
         },
         "de" : {
@@ -356555,130 +357218,10 @@
     "proCallToActionPinnedConversationsMoreThan" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5-dən çoxunu sancmaq istəyirsiniz? {app_pro} ilə söhbətlərinizi təşkil edin və premium özəlliklərin kilidini açın"
-          }
-        },
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vols més de 5 pins? Organitzes els teus xats i desbloqueges les funcions premium amb {app_pro}"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chcete více než 5 připnutí? Organizujte své chaty a odemkněte prémiové funkce pomocí Session Pro"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mehr als 5 Anheftungen gewünscht? Organisiere deine Chats und schalte Premium-Funktionen mit {app_pro} frei"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Want more than 5 pins? Organize your chats and unlock premium features with {app_pro}"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Quieres más de 5 conversaciones fijadas? Organiza tus chats y desbloquea funciones premium con {app_pro}"
-          }
-        },
-        "es-ES" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Quieres más de 5 conversaciones fijadas? Organiza tus chats y desbloquea funciones premium con {app_pro}"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous voulez plus que 5 messages épinglés ? Organisez vos chats et débloquez les fonctionnalités premium avec {app_pro}"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5 से अधिक पिन करना चाहते हैं? अपनी चैट व्यवस्थित करें और {app_pro} के साथ प्रीमियम सुविधाओं का अनलॉक करें"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vuoi più di 5 chat bloccate? Organizza le tue chat e sblocca le funzionalità premium con {app_pro}"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5件以上ピン留めしたいですか？{app_pro}でチャットを整理して、プレミアム機能を解除しましょう"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wil je meer dan 5 vastgezette gesprekken? Organiseer je chats en ontgrendel premiumfuncties met {app_pro}"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chcesz przypiąć więcej niż 5 czatów? Zorganizuj konwersacje i odblokuj funkcje premium dzięki {app_pro}"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quer fixar mais de 5 conversas? Organize os seus chats e desbloqueie funcionalidades premium com {app_pro}"
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vrei mai mult de 5 fixări? Organizează-ți conversațiile și deblochează funcționalități premium cu {app_pro}"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нужно более 5 закреплений? С {app_pro} организуйте свои чаты и получите доступ к премиум функциям"
-          }
-        },
-        "sv-SE" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vill du ha mer än 5 fästisar? Organisera dina chattar och lås upp premiumfunktioner med {app_pro}"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5'ten fazla sabitleme mi istiyorsunuz? Sohbetlerinizi düzenleyin ve {app_pro} ile premium özelliklerin kilidini açın"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Потрібно понад 5 закріплених бесід? Впорядкуйте свої бесіди та розблокуйте преміальні функції з {app_pro}"
-          }
-        },
-        "zh-CN" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想要固定超过 5 个对话？使用 {app_pro} 整理你的聊天并解锁高级功能"
-          }
-        },
-        "zh-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想要釘選超過 5 則對話嗎？使用 {app_pro} 整理您的聊天並解鎖進階功能"
+            "value" : "Want more than {limit} pins? Organize your chats and unlock premium features with {app_pro}"
           }
         }
       }
@@ -356706,7 +357249,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Canceling your {app_pro} plan will prevent your plan from automatically renewing before your {pro} plan expires. Canceling {pro} does <b>not</b> result in a refund. You will continue to be able to use {app_pro} features until your plan expires.<br/><br/>Because you originally signed up for {app_pro} using your <b>{platform_account}</b>, you'll need to use the same {platform_account} to cancel your plan."
+            "value" : "Canceling {pro} access will prevent automatic renewal from occurring before {pro} access expires. Canceling {pro} does <b>not</b> result in a refund. You will continue to be able to use {app_pro} features until your {pro} access expires.<br/><br/>Because you originally signed up for {app_pro} using your <b>{platform_account}</b>, you'll need to use the same {platform_account} to cancel {pro}."
           }
         }
       }
@@ -356714,16 +357257,32 @@
     "proCancellationOptions" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dva způsoby, jak zrušit váš tarif:"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Two ways to cancel your plan:"
+            "value" : "Two ways to cancel your {pro} access:"
+          }
+        }
+      }
+    },
+    "proCancellationShortDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canceling {pro} access will prevent automatic renewal from occurring before {pro} expires.<br/><br/>Canceling {pro} does <b>not</b> result in a refund. You will continue to be able to use {app_pro} features until your {pro} access expires."
+          }
+        }
+      }
+    },
+    "proCancelSorry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorry to see you cancel {pro}. Here's what you need to know before canceling your {pro} access."
           }
         }
       }
@@ -356739,19 +357298,24 @@
         }
       }
     },
-    "proClearAllDataDevice" : {
+    "proChooseAccess" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opravdu chcete smazat svá data z tohoto zařízení?<br/><br/><b>{app_pro}</b> nelze převést na jiný účet. Uložte si své heslo pro obnovení, abyste mohli svůj tarif {pro} později obnovit."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Are you sure you want to delete your data from this device?<br/><br/><b>{app_pro}</b> cannot be transferred to another account. Please save your Recovery Password to ensure you can restore your {pro} plan later."
+            "value" : "Choose the {pro} access option that's right for you.<br/>Longer access means bigger discounts."
+          }
+        }
+      }
+    },
+    "proClearAllDataDevice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete your data from this device?<br/><br/><b>{app_pro}</b> cannot be transferred to another account. Please save your Recovery Password to ensure you can restore your {pro} access later."
           }
         }
       }
@@ -356759,16 +357323,10 @@
     "proClearAllDataNetwork" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opravdu chcete smazat svá data ze sítě? Pokud budete pokračovat, nebudete moci obnovit vaše zprávy ani kontakty.<br/><br/><b>{app_pro}</b> nelze převést na jiný účet. Uložte si své heslo pro obnovení, abyste mohli svůj tarif {pro} později obnovit."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Are you sure you want to delete your data from the network? If you continue, you will not be able to restore your messages or contacts.<br/><br/><b>{app_pro}</b> cannot be transferred to another account. Please save your Recovery Password to ensure you can restore your {pro} plan later."
+            "value" : "Are you sure you want to delete your data from the network? If you continue, you will not be able to restore your messages or contacts.<br/><br/><b>{app_pro}</b> cannot be transferred to another account. Please save your Recovery Password to ensure you can restore your {pro} access later."
           }
         }
       }
@@ -356776,46 +357334,10 @@
     "proDiscountTooltip" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hazırkı planınızda artıq tam {app_pro} qiymətinin {percent}% endirimi mövcuddur."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš aktuální tarif je již zlevněn o {percent} % z plné ceny {app_pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your current plan is already discounted by {percent}% of the full {app_pro} price."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre abonnement actuel bénéficie déjà d'une remise de {percent}% sur le prix de {app_pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je huidige abonnement is al met {percent}% korting ten opzichte van de volledige {app_pro} prijs."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cena Twojego obecnego planu jest obniżona o {percent}% pełnej ceny {app_pro}."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "На поточну підписку ти вже маєш знижку {percent}% від загальної ціни {app_pro}."
+            "value" : "Your {pro} access is already discounted by {percent}% of the full {app_pro} price."
           }
         }
       }
@@ -356893,46 +357415,10 @@
     "proExpiredDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Təəssüf ki, {pro} planınızın müddəti bitib. {app_pro} tətbiqinin eksklüziv imtiyazlarına və özəlliklərinə erişimi davam etdirmək üçün yeniləyin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bohužel, váš tarif {pro} vypršel. Obnovte jej, abyste nadále měli přístup k exkluzivním výhodám a funkcím {app_pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unfortunately, your {pro} plan has expired. Renew to keep accessing the exclusive perks and features of {app_pro}."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Malheureusement, votre formule {pro} a expiré. Renouvelez-la pour continuer à profiter des avantages et fonctionnalités exclusifs de {app_pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Helaas is je {pro} abonnement verlopen. Verleng om toegang te blijven houden tot de exclusieve voordelen en functies van {app_pro}."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Niestety, Twój plan {pro} wygasł. Odnów go, by odzyskać dostęp do ekskluzywnych korzyści i funkcji {app_pro}."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "На жаль, підписка {pro} сплила. Онови її задля збереження переваг і можливостей {app_pro}."
+            "value" : "Unfortunately, your {pro} access has expired. Renew to reactivate the exclusive perks and features of {app_pro}."
           }
         }
       }
@@ -356987,46 +357473,10 @@
     "proExpiringSoonDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planınızın müddəti <b>{time}</b> vaxtında bitir. {app_pro} tətbiqinin eksklüziv imtiyazlarına və özəlliklərinə erişimi davam etdirmək üçün planınızı güncəlləyin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {pro} vyprší za <b>{time}</b>. Aktualizujte si tarif, abyste i nadále měli přístup k exkluzivním výhodám a funkcím {app_pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your {pro} plan is expiring in <b>{time}</b>. Update your plan to keep accessing the exclusive perks and features of {app_pro}."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre formule {pro} expire dans <b>{time}</b>. Mettez à jour votre formule pour continuer à profiter des avantages et fonctionnalités exclusifs de {app_pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {pro} abonnement verloopt over <b>{time}</b>. Werk je abonnement bij om toegang te blijven houden tot de exclusieve voordelen en functies van {app_pro}."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {pro} wygasa za <b>{time}</b>. Zaktualizuj swój plan, aby zachować dostęp do ekskluzywnych korzyści i funkcji {app_pro}."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Підписка {pro} спливе <b>{time}</b>. Онови підписку задля збереження переваг і можливостей {app_pro}."
+            "value" : "Your {pro} access is expiring in <b>{time}</b>. Update now to keep accessing the exclusive perks and features of {app_pro}."
           }
         }
       }
@@ -360713,6 +361163,17 @@
         }
       }
     },
+    "proFullestPotential" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to use {app_name} to its fullest potential?<br/>Upgrade to {app_pro} Beta to get access to loads of exclusive perks and features."
+          }
+        }
+      }
+    },
     "proGroupActivated" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -361191,46 +361652,10 @@
     "proImportantDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geri ödəniş tələbi qətidir. Əgər təsdiqlənsə, {pro} planınız dərhal ləğv ediləcək və bütün {pro} özəlliklərinə erişimi itirəcəksiniz."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Žádost o vrácení peněz je konečné. Pokud bude schváleno, váš tarif {pro} bude ihned zrušen a ztratíte přístup ke všem funkcím {pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Requesting a refund is final. If approved, your {pro} plan will be canceled immediately and you will lose access to all {pro} features."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La demande de remboursement est définitive. Si elle est approuvée, votre formule {pro} sera immédiatement annulée et vous perdrez l'accès à toutes les fonctionnalités {pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Het aanvragen van een terugbetaling is definitief. Indien goedgekeurd, wordt je {pro} abonnement onmiddellijk geannuleerd en verlies je de toegang tot alle {pro} functies."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wniosek o zwrot jest ostateczny. Jeżeli zostanie zatwierdzony, Twój plan {pro} zostanie natychmiast anulowany i utracisz dostęp do wszystkich funkcji {pro}."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Вимагання повернення грошей закінчено. В разі схвалення твою підписку {pro} негайно скасують і ти втратиш всі можливості {pro}."
+            "value" : "Requesting a refund is final. If approved, your {pro} access will be canceled immediately and you will lose access to all {pro} features."
           }
         }
       }
@@ -362509,6 +362934,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "提升"
+          }
+        }
+      }
+    },
+    "promoteAdminsWarning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admins will be able to see the last 14 days of message history and cannot be demoted or removed from the group."
+          }
+        }
+      }
+    },
+    "promoteMember" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Promote Member"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Promote Members"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -364312,7 +364781,18 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reinstall {app_name} on this device via the {platform_store}, restore your account with your Recovery Password, and renew your plan in the {app_pro} settings."
+            "value" : "Reinstall {app_name} on this device via the {platform_store}, restore your account with your Recovery Password, and renew {pro} from the {app_pro} settings."
+          }
+        }
+      }
+    },
+    "proNewInstallationUpgrade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reinstall {app_name} on this device via the {platform_store}, restore your account with your Recovery Password, and upgrade to {pro} from the {app_pro} settings."
           }
         }
       }
@@ -364320,16 +364800,21 @@
     "proOptionsRenewalSubtitle" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nyní jsou k dispozici tři způsoby obnovy:"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Currently, there are three ways to renew:"
+            "value" : "For now, there are three ways to renew:"
+          }
+        }
+      }
+    },
+    "proOptionsTwoRenewalSubtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For now, there are two ways to renew:"
           }
         }
       }
@@ -364600,404 +365085,13 @@
         }
       }
     },
-    "proPlanActivatedAuto" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınız aktivdir!<br/><br/>Planınız avtomatik olaraq <b>{date}</b> tarixində başqa bir <b>{current_plan}</b> üçün yenilənəcək. Planınıza edilən güncəlləmələr növbəti {pro} yenilənməsi zamanı qüvvəyə minəcək."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} je aktivní!<br/><br/>Váš tarif se automaticky obnoví na další <b>{current_plan}</b> dne <b>{date}</b>. Změny tarifu se projeví při příštím obnovení {pro}."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your {app_pro} plan is active!<br/><br/>Your plan will automatically renew for another <b>{current_plan}</b> on <b>{date}</b>. Updates to your plan take effect when {pro} is next renewed."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre formule {app_pro} est active !<br/><br/>Votre formule sera automatiquement renouvelée pour une autre <b>{current_plan}</b> le <b>{date}</b>. Les modifications apportées à votre formule prendront effet lors du prochain renouvellement de {pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement is actief!<br/><br/>Je abonnement wordt automatisch verlengd voor een nieuw <b>{current_plan}</b> op <b>{date}</b>. Wijzigingen aan je abonnement gaan in wanneer {pro} de volgende keer wordt verlengd."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} jest aktywny!<br/><br/>Zostanie on automatycznie odnowiony na kolejny <b>{current_plan}</b>, dnia <b>{date}</b>. Zmiany w Twoim planie wejdą w życie przy następnym odnowieniu subskrypcji {pro}."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для тебе діє підписка {app_pro}.<br/><br/><b>{date}</b> твою підписку буде самодійно поновлено як <b>{current_plan}</b>. Оновлення підписки настане під час наступного оновлення {pro}."
-          }
-        }
-      }
-    },
-    "proPlanActivatedAutoShort" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınız aktivdir!<br/><br/>Planınız avtomatik olaraq <b>{date}</b> tarixində başqa bir <b>{current_plan}</b> üçün yenilənəcək."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} je aktivní!<br/><br/>Tarif se automaticky obnoví na další <b>{current_plan}</b> dne <b>{date}</b>."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your {app_pro} plan is active!<br/><br/>Your plan will automatically renew for another <b>{current_plan}</b> on <b>{date}</b>."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre forfait {app_pro} est actif<br/><br/>Votre abonnement se renouvellera automatiquement pour un autre <b>{current_plan}</b> le <b>{date}</b>."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement is actief!<br/><br/>Je abonnement wordt automatisch verlengd met een <b>{current_plan}</b> op <b>{date}</b>."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} jest aktywny!<br/><br/>Zostanie on automatycznie odnowiony na kolejny <b>{current_plan}</b>, dnia <b>{date}</b>."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для тебе діє підписка {app_pro}.<br/><br/><b>{date}</b> твою підписку буде самодійно поновлено як <b>{current_plan}</b>."
-          }
-        }
-      }
-    },
-    "proPlanActivatedNotAuto" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınızın müddəti <b>{date}</b> tarixində bitir.<br/><br/>Eksklüziv Pro özəlliklərinə kəsintisiz erişimi təmin etmək üçün planınızı indi güncəlləyin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} vyprší dne <b>{date}</b>.<br/><br/>Aktualizujte si tarif nyní, abyste měli i nadále nepřerušený přístup k exkluzivním funkcím Pro."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your {app_pro} plan will expire on <b>{date}</b>.<br/><br/>Update your plan now to ensure uninterrupted access to exclusive Pro features."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre offre {app_pro} expirera le <b>{date}</b>.<br/><br/>Mettez votre offre à jour maintenant pour garantir un accès ininterrompu aux fonctionnalités exclusives Pro."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement verloopt op <b>{date}</b>.<br/><br/>Werk je abonnement nu bij om ononderbroken toegang te behouden tot exclusieve Pro functies."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} wygasa <b>{date}</b>.<br/><br/>Zaktualizuj swój plan już teraz, by zapewnić sobie nieprzerwany dostęp do ekskluzywnych funkcji Pro."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Твоя підписка {app_pro} спливе <b>{date}</b>.<br/><br/>Для збереження особливих можливостей подовж свою підписку."
-          }
-        }
-      }
-    },
-    "proPlanError" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planı xətası"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chyba tarifu {pro}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} Plan Error"
-          }
-        }
-      }
-    },
-    "proPlanExpireDate" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınızın müddəti <b>{date}</b> tarixində bitir."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} vyprší dne <b>{date}</b>."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your {app_pro} plan will expire on <b>{date}</b>."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre forfait {app_pro} expirera le <b>{date}</b>."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement verloopt op <b>{date}</b>."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} wygasa <b>{date}</b>."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Підписка {app_pro} спливе <b>{date}</b>."
-          }
-        }
-      }
-    },
-    "proPlanLoading" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planı yüklənir"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Načítání tarifu {pro}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} Plan Loading"
-          }
-        }
-      }
-    },
-    "proPlanLoadingDescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planınız barədə məlumatlar hələ də yüklənir. Bu proses tamamlanana qədər planınızı güncəlləyə bilməzsiniz."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {pro} se stále načítá. Dokud nebude načítání dokončeno, nemůžete tarif změnit."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information about your {pro} plan is still being loaded. You cannot update your plan until this process is complete."
-          }
-        }
-      }
-    },
-    "proPlanLoadingEllipsis" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planı yüklənir..."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Načítání tarifu {pro}..."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} plan loading..."
-          }
-        }
-      }
-    },
-    "proPlanNetworkLoadError" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hazırkı planınızı yükləmək üçün şəbəkəyə bağlana bilmir. Bağlantı bərpa olunana qədər {app_name} ilə planınızı güncəlləmək sıradan çıxarılacaq.<br/><br/>Lütfən şəbəkə bağlantınızı yoxlayıb yenidən sınayın."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nelze se připojit k síti a načíst váš aktuální tarif. Aktualizace tarifu prostřednictvím {app_name} bude deaktivována, dokud nebude obnoveno připojení.<br/><br/>Zkontrolujte připojení k síti a zkuste to znovu."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to connect to the network to load your current plan. Updating your plan via {app_name} will be disabled until connectivity is restored.<br/><br/>Please check your network connection and retry."
-          }
-        }
-      }
-    },
-    "proPlanNotFound" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planı tapılmadı"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} nebyl nalezen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} Plan Not Found"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Forfait {pro} introuvable"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} abonnement niet gevonden"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie znaleziono planu {pro}"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Передплата {pro} не знайдена"
-          }
-        }
-      }
-    },
-    "proPlanNotFoundDescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hesabınız üçün heç bir aktiv plan tapılmadı. Bunun bir səhv olduğunu düşünürsünüzsə, lütfən kömək üçün {app_name} dəstəyi ilə əlaqə saxlayın."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pro váš účet nebyl nalezen žádný aktivní tarif. Pokud si myslíte, že se jedná o chybu, kontaktujte podporu {app_name} a požádejte o pomoc."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No active plan was found for your account. If you believe this is a mistake, please reach out to {app_name} support for assistance."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun forfait actif n’a été trouvé pour votre compte. Si vous pensez qu’il s’agit d’une erreur, veuillez contacter l’assistance de {app_name} pour obtenir de l’aide."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Er is geen actief abonnement gevonden voor je account. Als je denkt dat dit een vergissing is, neem dan contact op met de ondersteuning van {app_name} voor hulp."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie znaleziono aktywnych planów dla Twojego konta. Jeżeli uważasz, że to błąd, prosimy o kontakt z Supportem {app_name}."
-          }
-        }
-      }
-    },
     "proPlanPlatformRefund" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Because you originally signed up for {app_pro} via the <b><span>{platform_store}</span></b>, you'll need to use the same {platform_account} to request a refund."
+            "value" : "Because you originally signed up for {app_pro} via the <b><span>{platform_store}</span></b>, you'll need to use your {platform_account} to request a refund."
           }
         }
       }
@@ -365013,327 +365107,13 @@
         }
       }
     },
-    "proPlanRecover" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planını geri qaytar"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Znovu nabýt tarif {pro}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recover {pro} Plan"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Récupérer le forfait {pro}"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} abonnement herstellen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odzyskaj plan {pro}"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Відновити передплату {pro}"
-          }
-        }
-      }
-    },
-    "proPlanRenew" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planını yenilə"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovit tarif {pro}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renew {pro} Plan"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renouveler l’abonnement {pro}"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} abonnement verlengen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odnów plan {pro}"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оновити підписку {pro}"
-          }
-        }
-      }
-    },
-    "proPlanRenewDesktop" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Currently, {pro} plans can only be purchased and renewed via the {platform_store} or {platform_store}. Because you are using {app_name} Desktop, you're not able to renew your plan here.<br/><br/>{app_pro} developers are working hard on alternative payment options to allow users to purchase {pro} plans outside of the {platform_store} and {platform_store}. <b>{pro} Roadmap</b> {icon}"
-          }
-        }
-      }
-    },
-    "proPlanRenewDesktopLinked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renew your plan in the {app_pro} settings on a linked device with {app_name} installed via the {platform_store} or {platform_store}."
-          }
-        }
-      }
-    },
-    "proPlanRenewPlatformStoreWebsite" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renew your plan on the <b><span>{platform_store} website</span></b> using the {platform_account} you signed up for {pro} with."
-          }
-        }
-      }
-    },
-    "proPlanRenewPlatformWebsite" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renew your plan on the <b><span>{platform} website</span></b> using the {platform_account} you signed up for {pro} with."
-          }
-        }
-      }
-    },
-    "proPlanRenewStart" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Güclü {app_pro} özəlliklərini yenidən istifadə etməyə başlamaq üçün {app_pro} planınızı yeniləyin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovte váš tarif {app_pro}, abyste mohli znovu využívat užitečné funkce {app_pro}."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renew your {app_pro} plan to start using powerful {app_pro} Beta features again."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renouvelez votre abonnement {app_pro} pour recommencer à utiliser les puissantes fonctionnalités bêta de {app_pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verleng je {app_pro} abonnement om opnieuw gebruik te maken van krachtige {app_pro} functies."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odnów swój plan {app_pro}, aby znów używać potężnych funkcji {app_pro} Beta."
-          }
-        }
-      }
-    },
     "proPlanRenewSupport" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} planınız yeniləndi! {network_name} dəstək verdiyiniz üçün təşəkkürlər."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif {app_pro} byl obnoven! Děkujeme, že podporujete síť {network_name}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your {app_pro} plan has been renewed! Thank you for supporting the {network_name}."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre forfait {app_pro} a été renouvelé ! Merci de soutenir le {network_name}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je {app_pro} abonnement is verlengd! Bedankt voor je steun aan de {network_name}."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twój plan {app_pro} został odnowiony! Dziękujemy za wspieranie {network_name}."
-          }
-        }
-      }
-    },
-    "proPlanRestored" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planı bərpa edildi"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} obnoven"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} Plan Restored"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} Forfait rétabli"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} abonnement hersteld"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plan {pro} został odzyskany"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "План {pro} відновлено"
-          }
-        }
-      }
-    },
-    "proPlanRestoredDescription" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{app_pro} üçün yararlı bir plan aşkarlandı və {pro} statusunuz bərpa edildi!"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Byl rozpoznán platný tarif {app_pro} a váš stav {pro} byl obnoven!"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A valid plan for {app_pro} was detected and your {pro} status has been restored!"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un abonnement valide pour {app_pro} a été détecté et votre statut {pro} a été restauré !"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Een geldig abonnement voor {app_pro} is gedetecteerd en je {pro} status is hersteld!"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wykryto ważny plan {app_pro} oraz przywrócono Twój status {pro}!"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Виявлено дійсний план {app_pro}, та ваш статус {pro} було відновлено!"
-          }
-        }
-      }
-    },
-    "proPlanSignUp" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Because you originally signed up for {app_pro} via the <b>{platform_store}</b>, you'll need to use your {platform_account} to update your plan."
+            "value" : "Your {app_pro} access has been renewed! Thank you for supporting the {network_name}."
           }
         }
       }
@@ -365590,7 +365370,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Refunds for {app_pro} plans are handled exclusively by {platform} through the {platform_store}.<br/><br/>Due to {platform} refund policies, {app_name} developers have no ability to influence the outcome of refund requests. This includes whether the request is approved or denied, as well as whether a full or partial refund is issued."
+            "value" : "Refunds for {app_pro} are handled exclusively by {platform} through the {platform_store}.<br/><br/>Due to {platform} refund policies, {app_name} developers have no ability to influence the outcome of refund requests. This includes whether the request is approved or denied, as well as whether a full or partial refund is issued."
           }
         }
       }
@@ -365663,19 +365443,46 @@
         }
       }
     },
+    "proRenewalUnsuccessful" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro renewal unsuccessful, retrying soon"
+          }
+        }
+      }
+    },
+    "proRenewAnimatedDisplayPicture" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to use animated display pictures again?<br/>Renew your {pro} access to unlock the features you’ve been missing out on."
+          }
+        }
+      }
+    },
     "proRenewBeta" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovit {pro} Beta"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Renew {pro} Beta"
+          }
+        }
+      }
+    },
+    "proRenewDesktopLinked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renew your {pro} access from the {app_pro} settings on a linked device with {app_name} installed via the {platform_store} or {platform_store_other}."
           }
         }
       }
@@ -365686,7 +365493,62 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Currently, {pro} plans can only be purchased and renewed via the {platform_store} or {platform_store}. Because you installed {app_name} using the {buildVariant}, you're not able to renew your plan here.<br/><br/>{app_pro} developers are working hard on alternative payment options to allow users to purchase {pro} plans outside of the {platform_store} and {platform_store}.<b> {pro} Roadmap</b> {icon}"
+            "value" : "Currently, {pro} access can only be purchased and renewed via the {platform_store} or {platform_store_other}. Because you installed {app_name} using the {build_variant}, you're not able to renew here.<br/><br/>{app_name} developers are working hard on alternative payment options to allow users to purchase {pro} access outside of the {platform_store} and {platform_store_other}.<b> {pro} Roadmap</b> {icon}"
+          }
+        }
+      }
+    },
+    "proRenewLongerMessages" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to send longer messages again?<br/>Renew your {pro} access to unlock the features you’ve been missing out on."
+          }
+        }
+      }
+    },
+    "proRenewMaxPotential" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to use {app_name} to its max potential again?<br/>Renew your {pro} access to unlock the features you’ve been missing out on."
+          }
+        }
+      }
+    },
+    "proRenewPinFiveConversations" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to pin more than 5 conversations again?<br/>Renew your {pro} access to unlock the features you’ve been missing out on."
+          }
+        }
+      }
+    },
+    "proRenewPinMoreConversations" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to pin more conversations again?<br/>Renew your {pro} access to unlock the features you’ve been missing out on."
+          }
+        }
+      }
+    },
+    "proRenewTosPrivacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By renewing, you agree to the {app_pro} <b>Terms of Service</b> {icon} and <b>Privacy Policy</b> {icon}"
           }
         }
       }
@@ -365918,6 +365780,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Налаштування {pro}"
+          }
+        }
+      }
+    },
+    "proStartUsing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Using {pro}"
           }
         }
       }
@@ -366183,6 +366056,17 @@
         }
       }
     },
+    "proStatusNetworkErrorContinue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to connect to the network to check your {pro} status. You cannot continue until connectivity is restored.<br/><br/>Please check your network connection and retry."
+          }
+        }
+      }
+    },
     "proStatusNetworkErrorDescription" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -366229,49 +366113,24 @@
         }
       }
     },
-    "proSupportDescription" : {
+    "proStatusRenewError" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "{pro} planınızla bağlı kömək lazımdır? Dəstək komandamıza müraciət edin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Potřebujete pomoc se svým tarifem {pro}? Pošlete žádost týmu podpory."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Need help with your {pro} plan? Submit a request to the support team."
+            "value" : "Unable to connect to the network to load your current {pro} access. Renewing {pro} via {app_name} will be disabled until connectivity is restored.<br/><br/>Please check your network connection and retry."
           }
-        },
-        "fr" : {
+        }
+      }
+    },
+    "proSupportDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Besoin d'aide avec votre forfait {pro} ? Envoyez une demande à l'équipe d'assistance."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hulp nodig met je {pro} abonnement? Dien een verzoek in bij het ondersteuningsteam."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Potrzebujesz pomocy z planem {pro}? Wyślij zgłoszenie zespołowi wsparcia."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Якщо потребуєш допомоги щодо підписки {pro}, надійшли звернення до відділу підтримки."
+            "value" : "Need help with {pro}? Submit a request to the support team."
           }
         }
       }
@@ -366423,78 +366282,112 @@
         }
       }
     },
-    "proUpdatePlanDescription" : {
+    "proUpdateAccessDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hazırda <b>{current_plan} Planı</b> üzərindəsiniz. <b>{selected_plan} Planına</b>na keçmək istədiyinizə əminsiniz?<br/><br/>Güncəlləsəniz, planınız <b>{date}</b> tarixində əlavə {selected_plan} {pro} erişimi üçün avtomatik yenilənəcək."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "V současné době jste na <b>tarifu {current_plan}</b>. Jste si jisti, že chcete přepnout na <b>tarif {selected_plan}</b>?<br/><br/>Po aktualizaci bude váš tarif automaticky obnoven <b>{date}</b> na další {selected_plan} přístupu {pro}."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You are currently on the <b>{current_plan} Plan</b>. Are you sure you want to switch to the <b>{selected_plan} Plan</b>?<br/><br/>By updating, your plan will automatically renew on <b>{date}</b> for an additional {selected_plan} of {pro} access."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous êtes actuellement sur le <b>forfait {current_plan}</b>. Voulez-vous vraiment passer au <b>forfait {selected_plan}</b>?<br/><br/>En mettant à jour, votre forfait sera automatiquement renouvelé le <b>{date}</b> pour {selected_plan} supplémentaire de l'accès {pro}."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je zit momenteel op het <b>{current_plan} abonnement</b>. Weet je zeker dat je wilt overschakelen naar het <b>{selected_plan} abonnement</b>?<br/><br/>Als je dit bijwerkt, wordt je abonnement op <b>{date}</b> automatisch verlengd met {selected_plan} {pro} toegang."
+            "value" : "Your current billing option grants <b>{current_plan_length}</b> of {pro} access. Are you sure you want to switch to the <b>{selected_plan_length_singular}</b> billing option?<br/><br/>By updating, your {pro} access will automatically renew on <b>{date}</b> for an additional <b>{selected_plan_length}</b> of {pro} access."
           }
         }
       }
     },
-    "proUpdatePlanExpireDescription" : {
+    "proUpdateAccessExpireDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planınız <b>{date}</b> tarixində bitəcək.<br/><br/>Güncəlləsəniz, planınız <b>{date}</b> tarixində əlavə {selected_plan} Pro erişimi üçün avtomatik olaraq yenilənəcək."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Váš tarif vyprší <b>{date}</b>.<br/><br/>Po aktualizaci se váš tarif automaticky obnoví <b>{date}</b> na další {selected_plan} přístupu Pro."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your plan will expire on <b>{date}</b>.<br/><br/>By updating, your plan will automatically renew on <b>{date}</b> for an additional {selected_plan} of Pro access."
+            "value" : "Your {pro} access will expire on <b>{date}</b>.<br/><br/>By updating, your {pro} access will automatically renew on <b>{date}</b> for an additional <b>{selected_plan_length}</b> of {pro} access."
           }
-        },
-        "fr" : {
+        }
+      }
+    },
+    "proUpgradeAccess" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Votre forfait expirera le <b>{date}</b>.<br/><br/>En le mettant à jour, votre forfait sera automatiquement renouvelé le <b>{date}</b> pour {selected_plan} supplémentaires d’accès Pro."
+            "value" : "Upgrade to {app_pro} Beta to get access to loads of exclusive perks and features."
           }
-        },
-        "nl" : {
+        }
+      }
+    },
+    "proUpgraded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Je abonnement verloopt op <b>{date}</b>.<br/><br/>Door bij te werken wordt je abonnement automatisch verlengd op <b>{date}</b> voor een extra {selected_plan} aan Pro-toegang."
+            "value" : "You have upgraded to {app_pro}!<br/>Thank you for supporting the {network_name}."
           }
-        },
-        "uk" : {
+        }
+      }
+    },
+    "proUpgradeDesktopLinked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ваш план завершиться <b>{date}</b>.<br/><br/>Після оновлення налаштувань автоматичної оплати, ваш план автоматично подовжиться <b>{date}</b> на додатковий {selected_plan} доступу до Pro."
+            "value" : "Upgrade to {pro} from the {app_pro} settings on a linked device with {app_name} installed via the {platform_store} or {platform_store_other}."
+          }
+        }
+      }
+    },
+    "proUpgradeNoAccessBilling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Currently, {pro} access can only be purchased via the {platform_store} or {platform_store_other}. Because you installed {app_name} using the {build_variant}, you're not able to upgrade to {pro} here.<br/><br/>{app_name} developers are working hard on alternative payment options to allow users to purchase {pro} access outside of the {platform_store} and {platform_store_other}.<b> {pro} Roadmap</b> {icon}"
+          }
+        }
+      }
+    },
+    "proUpgradeOption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For now, there is only one way to upgrade:"
+          }
+        }
+      }
+    },
+    "proUpgradeOptionsTwo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For now, there are two ways to upgrade:"
+          }
+        }
+      }
+    },
+    "proUpgradingTo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upgrading to {pro}"
+          }
+        }
+      }
+    },
+    "proUpgradingTosPrivacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By upgrading, you agree to the {app_pro} <b>Terms of Service</b> {icon} and <b>Privacy Policy</b> {icon}"
           }
         }
       }
@@ -381602,13 +381495,13 @@
         }
       }
     },
-    "refundPlanNonOriginatorApple" : {
+    "refundNonOriginatorApple" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Because you originally signed up for {app_pro} via a different {platform_account}, you'll need to use that <b><span>{platform_account}</span></b> to update your plan."
+            "value" : "Because you originally signed up for {app_pro} via a different {platform_account}, you'll need to use that <b><span>{platform_account}</span></b> to update your {pro} access."
           }
         }
       }
@@ -382258,6 +382151,17 @@
         }
       }
     },
+    "remindMeLater" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remind Me Later"
+          }
+        }
+      }
+    },
     "remove" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -382733,6 +382637,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除"
+          }
+        }
+      }
+    },
+    "removeMember" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Remove Member"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Remove Members"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "removeMemberMessages" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Remove member and their messages"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Remove member and their messages"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -383281,6 +383251,39 @@
         }
       }
     },
+    "removingMember" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Removing member"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Removing members"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "renew" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -383288,12 +383291,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yenilə"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovit"
           }
         },
         "en" : {
@@ -383325,16 +383322,10 @@
     "renewingPro" : {
       "extractionState" : "manual",
       "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Obnovení Pro"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Renewing Pro"
+            "value" : "Renewing {pro}"
           }
         }
       }
@@ -384357,6 +384348,138 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新傳送"
+          }
+        }
+      }
+    },
+    "resendingInvite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resending invite"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resending invites"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "resendingPromotion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resending promotion"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resending promotions"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "resendInvite" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resend Invite"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resend Invites"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "resendPromotion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resend Promotion"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Resend Promotions"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -418356,6 +418479,39 @@
         }
       }
     },
+    "update" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update"
+          }
+        }
+      }
+    },
+    "updateAccess" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update {pro} Access"
+          }
+        }
+      }
+    },
+    "updateAccessTwo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two ways to update your {pro} access:"
+          }
+        }
+      }
+    },
     "updateApp" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -422583,100 +422739,6 @@
         }
       }
     },
-    "updatePlan" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planı güncəllə"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktualizovat tarif"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Plan"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mettre à jour le forfait"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abonnement bijwerken"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zaktualizuj plan"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оновити тарифний план"
-          }
-        }
-      }
-    },
-    "updatePlanTwo" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planınızı güncəlləməyin iki yolu var:"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dva způsoby, jak aktualizovat váš tarif:"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Two ways to update your plan:"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deux façons de mettre à jour votre abonnement :"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twee manieren om je abonnement bij te werken:"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dwa sposoby na aktualizację planu:"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Два шляхи поновлення твоєї підписки:"
-          }
-        }
-      }
-    },
     "updateProfileInformation" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -424400,6 +424462,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Оновлення..."
+          }
+        }
+      }
+    },
+    "upgrade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upgrade"
           }
         }
       }
@@ -427479,6 +427552,17 @@
         }
       }
     },
+    "viaPlatformWebsiteDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change your plan using the {platform_account} you used to sign up with, via the <b><span>{platform} website</span></b> ."
+          }
+        }
+      }
+    },
     "viaStoreWebsite" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -427493,34 +427577,10 @@
     "viaStoreWebsiteDescription" : {
       "extractionState" : "manual",
       "localizations" : {
-        "az" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qeydiyyatdan keçərkən istifadə etdiyiniz {platform_account} hesabı ilə <b><span>{platform_store}</span></b> veb saytı üzərindən planınızı dəyişdirin."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Změňte svůj tarif pomocí {platform_account}, se kterým jste se zaregistrovali, prostřednictvím webu <b><span>{platform_store}</span></b>."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change your plan using the {platform_account} you used to sign up with, via the <b><span>{platform_store}</span></b> website."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifiez votre abonnement en utilisant le compte {platform_account} avec lequel vous vous êtes inscrit, via le site web de <b><span>{platform_store}</span></b>."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wijzig je abonnement met het {platform_account} waarmee je je hebt aangemeld, via de <b><span>{platform_store}</span></b> website."
+            "value" : "Update your {pro} access using the {platform_account} you used to sign up with, via the <b><span>{platform_store}</span></b> website."
           }
         }
       }

@@ -42,15 +42,16 @@ public extension ProfilePictureView {
         additionalProfile: Profile? = nil,
         additionalProfileIcon: ProfileIcon = .none,
         using dependencies: Dependencies
-    ) -> (Info?, Info?) {
+    ) -> (info: Info?, additionalInfo: Info?) {
         let explicitPath: String? = try? dependencies[singleton: .displayPictureManager].path(
             for: displayPictureUrl
         )
+        let explicitPathFileExists: Bool = (explicitPath.map { dependencies[singleton: .fileManager].fileExists(atPath: $0) } ?? false)
         
-        switch (explicitPath, publicKey.isEmpty, threadVariant) {
+        switch (explicitPath, explicitPathFileExists, publicKey.isEmpty, threadVariant) {
             // TODO: Deal with this case later when implement group related Pro features
-            case (.some(let path), _, .legacyGroup), (.some(let path), _, .group): fallthrough
-            case (.some(let path), _, .community):
+            case (.some(let path), true, _, .legacyGroup), (.some(let path), true, _, .group): fallthrough
+            case (.some(let path), true, _, .community):
                 /// If we are given an explicit `displayPictureUrl` then only use that
                 return (Info(
                     source: .url(URL(fileURLWithPath: path)),
@@ -58,7 +59,7 @@ public extension ProfilePictureView {
                     icon: profileIcon
                 ), nil)
             
-            case (.some(let path), _, _):
+            case (.some(let path), true, _, _):
                 /// If we are given an explicit `displayPictureUrl` then only use that
                 return (
                     Info(
@@ -69,14 +70,14 @@ public extension ProfilePictureView {
                     nil
                 )
             
-            case (_, _, .community):
+            case (_, _, _, .community):
                 return (
                     Info(
                         source: {
                             switch size {
                                 case .navigation, .message: return .image("SessionWhite16", #imageLiteral(resourceName: "SessionWhite16"))
                                 case .list: return .image("SessionWhite24", #imageLiteral(resourceName: "SessionWhite24"))
-                                case .hero, .modal: return .image("SessionWhite40", #imageLiteral(resourceName: "SessionWhite40"))
+                                case .hero, .modal, .expanded: return .image("SessionWhite40", #imageLiteral(resourceName: "SessionWhite40"))
                             }
                         }(),
                         animationBehaviour: .generic(true),
@@ -92,9 +93,9 @@ public extension ProfilePictureView {
                     nil
                 )
             
-            case (_, true, _): return (nil, nil)
+            case (_, _, true, _): return (nil, nil)
                 
-            case (_, _, .legacyGroup), (_, _, .group):
+            case (_, _, _, .legacyGroup), (_, _, _, .group):
                 let source: ImageDataManager.DataSource = {
                     guard
                         let path: String = try? dependencies[singleton: .displayPictureManager]
@@ -162,7 +163,7 @@ public extension ProfilePictureView {
                         )
                 )
                 
-            case (_, _, .contact):
+            case (_, _, _, .contact):
                 let source: ImageDataManager.DataSource = {
                     guard
                         let path: String = try? dependencies[singleton: .displayPictureManager]

@@ -193,7 +193,10 @@ class EditGroupViewModel: SessionTableViewModel, NavigatableStateHolder, Observa
                         ),
                         styling: SessionCell.StyleInfo(
                             alignment: .centerHugging,
-                            customPadding: SessionCell.Padding(bottom: Values.smallSpacing),
+                            customPadding: SessionCell.Padding(
+                                leading: 0,
+                                bottom: Values.smallSpacing
+                            ),
                             backgroundStyle: .noBackground
                         ),
                         accessibility: Accessibility(
@@ -297,7 +300,11 @@ class EditGroupViewModel: SessionTableViewModel, NavigatableStateHolder, Observa
                                 font: .title,
                                 accessibility: Accessibility(
                                     identifier: "Contact"
-                                )
+                                ),
+                                trailingImage: {
+                                    guard (dependencies.mutate(cache: .libSession) { $0.validateProProof(for: memberInfo.profile) }) else { return nil }
+                                    return ("ProBadge", { [dependencies] in SessionProBadge(size: .small).toImage(using: dependencies) })
+                                }()
                             ),
                             subtitle: (!isUpdatedGroup ? nil : SessionCell.TextInfo(
                                 memberInfo.value.statusDescription,

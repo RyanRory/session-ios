@@ -93,6 +93,7 @@ public struct SessionThreadViewModel: PagableRecord, FetchableRecordWithRowId, D
         case recentReactionEmoji
         case wasKickedFromGroup
         case groupIsDestroyed
+        case isContactApproved
     }
     
     public struct MessageInputState: Equatable {
@@ -157,7 +158,7 @@ public struct SessionThreadViewModel: PagableRecord, FetchableRecordWithRowId, D
     
     public let contactLastKnownClientVersion: FeatureVersion?
     public let threadDisplayPictureUrl: String?
-    internal let contactProfile: Profile?
+    public let contactProfile: Profile?
     internal let closedGroupProfileFront: Profile?
     internal let closedGroupProfileBack: Profile?
     internal let closedGroupProfileBackFallback: Profile?
@@ -197,6 +198,9 @@ public struct SessionThreadViewModel: PagableRecord, FetchableRecordWithRowId, D
     public let recentReactionEmoji: [String]?
     public let wasKickedFromGroup: Bool?
     public let groupIsDestroyed: Bool?
+    
+    /// Flag indicates that the contact's message request has been approved
+    public let isContactApproved: Bool?
     
     // UI specific logic
     
@@ -275,6 +279,13 @@ public struct SessionThreadViewModel: PagableRecord, FetchableRecordWithRowId, D
             )
         }
         
+        if threadVariant == .community && threadCanWrite == false {
+            return MessageInputState(
+                allowedInputTypes: .none,
+                message: "permissionsWriteCommunity".localized()
+            )
+        }
+        
         return MessageInputState(
             allowedInputTypes: (threadRequiresApproval == false && threadIsMessageRequest == false ?
                 .all :
@@ -332,6 +343,31 @@ public struct SessionThreadViewModel: PagableRecord, FetchableRecordWithRowId, D
             threadIsMessageRequest == false &&
             threadVariant != .legacyGroup
         )
+    }
+    
+    public func isSessionPro(using dependencies: Dependencies) -> Bool {
+        guard threadIsNoteToSelf == false && threadVariant != .community else {
+            return false
+        }
+        return dependencies.mutate(cache: .libSession) { [threadId] in $0.validateSessionProState(for: threadId)}
+    }
+    
+    public func getQRCodeString() -> String {
+        switch self.threadVariant {
+            case .contact, .legacyGroup, .group:
+                return self.threadId
+
+            case .community:
+                guard
+                    let urlString: String = LibSession.communityUrlFor(
+                        server: self.openGroupServer,
+                        roomToken: self.openGroupRoomToken,
+                        publicKey: self.openGroupPublicKey
+                    )
+                else { return "" }
+
+                return urlString
+        }
     }
     
     // MARK: - Marking as Read
@@ -595,6 +631,7 @@ public extension SessionThreadViewModel {
         self.recentReactionEmoji = nil
         self.wasKickedFromGroup = false
         self.groupIsDestroyed = false
+        self.isContactApproved = false
     }
 }
 
@@ -672,7 +709,8 @@ public extension SessionThreadViewModel {
             currentUserSessionIds: currentUserSessionIds,
             recentReactionEmoji: recentReactionEmoji,
             wasKickedFromGroup: wasKickedFromGroup,
-            groupIsDestroyed: groupIsDestroyed
+            groupIsDestroyed: groupIsDestroyed,
+            isContactApproved: isContactApproved
         )
     }
 }
@@ -1726,7 +1764,6 @@ public extension SessionThreadViewModel {
                     GROUP_CONCAT(IFNULL(\(profile[.nickname]), \(profile[.name])), ', ') AS \(GroupMemberInfo.Columns.threadMemberNames)
                 FROM \(GroupMember.self)
                 JOIN \(Profile.self) ON \(profile[.id]) = \(groupMember[.profileId])
-                WHERE \(SQL("\(groupMember[.role]) = \(GroupMember.Role.standard)"))
                 GROUP BY \(groupMember[.groupId])
             ) AS \(groupMemberInfo) ON \(groupMemberInfo[.groupId]) = \(closedGroup[.threadId])
             LEFT JOIN \(closedGroupProfileFront) ON (
@@ -2060,13 +2097,14 @@ public extension SessionThreadViewModel {
         
         /// **Note:** The `numColumnsBeforeProfiles` value **MUST** match the number of fields before
         /// the `contactProfile` entry below otherwise the query will fail to parse and might throw
-        let numColumnsBeforeProfiles: Int = 8
+        let numColumnsBeforeProfiles: Int = 9
         let request: SQLRequest<ViewModel> = """
             SELECT
                 100 AS \(Column.rank),
                 
                 \(contact[.rowId]) AS \(ViewModel.Columns.rowId),
                 \(contact[.id]) AS \(ViewModel.Columns.threadId),
+                \(contact[.isApproved]) AS \(ViewModel.Columns.isContactApproved),
                 \(SessionThread.Variant.contact) AS \(ViewModel.Columns.threadVariant),
                 IFNULL(\(thread[.creationDateTimestamp]), \(currentTimestamp)) AS \(ViewModel.Columns.threadCreationDateTimestamp),
                 '' AS \(ViewModel.Columns.threadMemberNames),

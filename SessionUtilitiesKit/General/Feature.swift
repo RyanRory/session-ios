@@ -46,6 +46,10 @@ public extension FeatureStorage {
         defaultOption: 100
     )
     
+    static let groupsShowPubkeyInConversationSettings: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "groupsShowPubkeyInConversationSettings"
+    )
+    
     static let updatedGroupsDisableAutoApprove: FeatureConfig<Bool> = Dependencies.create(
         identifier: "updatedGroupsDisableAutoApprove"
     )
@@ -90,16 +94,45 @@ public extension FeatureStorage {
         identifier: "mockCurrentUserSessionPro"
     )
     
-    static let treatAllIncomingMessagesAsProMessages: FeatureConfig<Bool> = Dependencies.create(
-        identifier: "treatAllIncomingMessagesAsProMessages"
+    static let allUsersSessionPro: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "allUsersSessionPro"
+    )
+    
+    static let messageFeatureProBadge: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "messageFeatureProBadge"
+    )
+    
+    static let messageFeatureLongMessage: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "messageFeatureLongMessage"
+    )
+    
+    static let messageFeatureAnimatedAvatar: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "messageFeatureAnimatedAvatar"
     )
     
     static let shortenFileTTL: FeatureConfig<Bool> = Dependencies.create(
         identifier: "shortenFileTTL"
     )
-
+    
+    static let deterministicAttachmentEncryption: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "deterministicAttachmentEncryption"
+    )
+    
     static let simulateAppReviewLimit: FeatureConfig<Bool> = Dependencies.create(
         identifier: "simulateAppReviewLimit"
+    )
+    
+    static let usePngInsteadOfWebPForFallbackImageType: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "usePngInsteadOfWebPForFallbackImageType"
+    )
+    
+    static let versionDeprecationWarning: FeatureConfig<Bool> = Dependencies.create(
+        identifier: "versionDeprecationWarning"
+    )
+    
+    static let versionDeprecationMinimum: FeatureConfig<Int> = Dependencies.create(
+        identifier: "versionDeprecationMinimum",
+        defaultOption: 16
     )
 }
 

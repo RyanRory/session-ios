@@ -1,6 +1,8 @@
 // Copyright © 2022 Rangeproof Pty Ltd. All rights reserved.
 
+import SwiftUI
 import Foundation
+import PhotosUI
 import Combine
 import Lucide
 import GRDB
@@ -11,7 +13,7 @@ import SignalUtilitiesKit
 import SessionUtilitiesKit
 import SessionNetworkingKit
 
-class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, ObservableTableSource {
+class ThreadSettingsViewModel: SessionTableViewModel, NavigationItemSource, NavigatableStateHolder, ObservableTableSource {
     public let dependencies: Dependencies
     public let navigatableState: NavigatableState = NavigatableState()
     public let state: TableDataState<Section, TableItem> = TableDataState()
@@ -22,13 +24,17 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
     private let didTriggerSearch: () -> ()
     private var updatedName: String?
     private var updatedDescription: String?
-    private var onDisplayPictureSelected: ((ConfirmationModal.ValueUpdate) -> Void)?
+    private var onDisplayPictureSelected: ((ImageDataManager.DataSource, CGRect?) -> Void)?
     private lazy var imagePickerHandler: ImagePickerHandler = ImagePickerHandler(
         onTransition: { [weak self] in self?.transitionToScreen($0, transitionType: $1) },
-        onImageDataPicked: { [weak self] identifier, resultImageData in
-            self?.onDisplayPictureSelected?(.image(identifier: identifier, data: resultImageData))
-        }
+        onImagePicked: { [weak self] source, cropRect in
+            self?.onDisplayPictureSelected?(source, cropRect)
+        },
+        using: dependencies
     )
+    private var profileImageStatus: (previous: ProfileImageStatus?, current: ProfileImageStatus?)
+    // TODO: Refactor this with SessionThreadViewModel
+    private var threadViewModelSubject: CurrentValueSubject<SessionThreadViewModel?, Never>
     
     // MARK: - Initialization
     
@@ -42,36 +48,41 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
         self.threadId = threadId
         self.threadVariant = threadVariant
         self.didTriggerSearch = didTriggerSearch
+        self.threadViewModelSubject = CurrentValueSubject(nil)
+        self.profileImageStatus = (previous: nil, current: .normal)
     }
     
     // MARK: - Config
-    
-    enum NavState {
-        case standard
-        case editing
+    enum ProfileImageStatus: Equatable {
+        case normal
+        case expanded
+        case qrCode
     }
     
     enum NavItem: Equatable {
         case edit
-        case cancel
-        case done
     }
     
     public enum Section: SessionTableSection {
         case conversationInfo
+        case sessionId
+        case sessionIdNoteToSelf
         case content
         case adminActions
         case destructiveActions
         
         public var title: String? {
             switch self {
-            case .adminActions: return "adminSettings".localized()
+                case .sessionId: return "accountId".localized()
+                case .sessionIdNoteToSelf: return "accountIdYours".localized()
+                case .adminActions: return "adminSettings".localized()
                 default: return nil
             }
         }
         
         public var style: SessionTableSectionStyle {
             switch self {
+                case .sessionId, .sessionIdNoteToSelf: return .titleSeparator
                 case .destructiveActions: return .padding
                 case .adminActions: return .titleRoundedContent
                 default: return .none
@@ -81,6 +92,7 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
     
     public enum TableItem: Differentiable {
         case avatar
+        case qrCode
         case displayName
         case contactName
         case threadDescription
@@ -109,6 +121,47 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
         case debugDeleteAttachmentsBeforeNow
     }
     
+    lazy var rightNavItems: AnyPublisher<[SessionNavItem<NavItem>], Never> = threadViewModelSubject
+        .map { [weak self] threadViewModel -> [SessionNavItem<NavItem>] in
+            guard let threadViewModel: SessionThreadViewModel = threadViewModel else { return [] }
+           
+            let currentUserIsClosedGroupAdmin: Bool = (
+                [.legacyGroup, .group].contains(threadViewModel.threadVariant) &&
+                threadViewModel.currentUserIsClosedGroupAdmin == true
+            )
+            
+            let canEditDisplayName: Bool = (
+                threadViewModel.threadIsNoteToSelf != true &&
+                (
+                    threadViewModel.threadVariant == .contact ||
+                    currentUserIsClosedGroupAdmin
+                )
+            )
+            
+            guard canEditDisplayName else { return [] }
+            
+            return [
+                SessionNavItem(
+                    id: .edit,
+                    image: Lucide.image(icon: .pencil, size: 22)?
+                        .withRenderingMode(.alwaysTemplate),
+                    style: .plain,
+                    accessibilityIdentifier: "Edit Nickname",
+                    action: { [weak self] in
+                        guard
+                            let info: ConfirmationModal.Info = self?.updateDisplayNameModal(
+                                threadViewModel: threadViewModel,
+                                currentUserIsClosedGroupAdmin: currentUserIsClosedGroupAdmin
+                            )
+                        else { return }
+                        
+                        self?.transitionToScreen(ConfirmationModal(info: info), transitionType: .present)
+                    }
+                )
+            ]
+        }
+        .eraseToAnyPublisher()
+    
     // MARK: - Content
     
     private struct State: Equatable {
@@ -124,23 +177,30 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
     }
     
     lazy var observation: TargetObservation = ObservationBuilderOld
-        .databaseObservation(self) { [dependencies, threadId = self.threadId] db -> State in
+        .databaseObservation(self) { [ weak self, dependencies, threadId = self.threadId] db -> State in
             let userSessionId: SessionId = dependencies[cache: .general].sessionId
-            let threadViewModel: SessionThreadViewModel? = try SessionThreadViewModel
+            var threadViewModel: SessionThreadViewModel? = try SessionThreadViewModel
                 .conversationSettingsQuery(threadId: threadId, userSessionId: userSessionId)
                 .fetchOne(db)
             let disappearingMessagesConfig: DisappearingMessagesConfiguration = try DisappearingMessagesConfiguration
                 .fetchOne(db, id: threadId)
                 .defaulting(to: DisappearingMessagesConfiguration.defaultWith(threadId))
             
+            self?.threadViewModelSubject.send(threadViewModel)
+            
             return State(
                 threadViewModel: threadViewModel,
                 disappearingMessagesConfig: disappearingMessagesConfig
             )
         }
-        .compactMap { [weak self] current -> [SectionModel]? in self?.content(current) }
+        .compactMap { [weak self] current -> [SectionModel]? in
+            self?.content(
+                current,
+                profileImageStatus: self?.profileImageStatus
+            )
+        }
     
-    private func content(_ current: State) -> [SectionModel] {
+    private func content(_ current: State, profileImageStatus: (previous: ProfileImageStatus?, current: ProfileImageStatus?)?) -> [SectionModel] {
         // If we don't get a `SessionThreadViewModel` then it means the thread was probably deleted
         // so dismiss the screen
         guard let threadViewModel: SessionThreadViewModel = current.threadViewModel else {
@@ -165,89 +225,101 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
             isGroup &&
             threadViewModel.currentUserIsClosedGroupAdmin == true
         )
-        let canEditDisplayName: Bool = (
-            threadViewModel.threadIsNoteToSelf != true && (
-                threadViewModel.threadVariant == .contact ||
-                currentUserIsClosedGroupAdmin
-            )
-        )
         let isThreadHidden: Bool = (
             threadViewModel.threadShouldBeVisible != true &&
             threadViewModel.threadPinnedPriority == LibSession.hiddenPriority
         )
+
+        let showThreadPubkey: Bool = (
+            threadViewModel.threadVariant == .contact || (
+                threadViewModel.threadVariant == .group &&
+                dependencies[feature: .groupsShowPubkeyInConversationSettings]
+            )
+        )
         // MARK: - Conversation Info
+        
         let conversationInfoSection: SectionModel = SectionModel(
             model: .conversationInfo,
             elements: [
-                SessionCell.Info(
-                    id: .avatar,
-                    accessory: .profile(
-                        id: threadViewModel.id,
-                        size: .hero,
-                        threadVariant: threadViewModel.threadVariant,
-                        displayPictureUrl: threadViewModel.threadDisplayPictureUrl,
-                        profile: threadViewModel.profile,
-                        profileIcon: {
-                            guard
-                                threadViewModel.threadVariant == .group &&
-                                currentUserIsClosedGroupAdmin &&
-                                dependencies[feature: .updatedGroupsAllowDisplayPicture]
-                            else { return .none }
+                (profileImageStatus?.current == .qrCode ?
+                    SessionCell.Info(
+                        id: .qrCode,
+                        accessory: .qrCode(
+                            for: threadViewModel.getQRCodeString(),
+                            hasBackground: false,
+                            logo: "SessionWhite40", // stringlint:ignore
+                            themeStyle: ThemeManager.currentTheme.interfaceStyle
+                        ),
+                        styling: SessionCell.StyleInfo(
+                            alignment: .centerHugging,
+                            customPadding: SessionCell.Padding(bottom: Values.smallSpacing),
+                            backgroundStyle: .noBackground
+                        ),
+                        onTapView: { [weak self] targetView in
+                            let didTapProfileIcon: Bool = !(targetView is UIImageView)
                             
-                            // If we already have a display picture then the main profile gets the icon
-                            return (threadViewModel.threadDisplayPictureUrl != nil ? .rightPlus : .none)
-                        }(),
-                        additionalProfile: threadViewModel.additionalProfile,
-                        additionalProfileIcon: {
-                            guard
-                                threadViewModel.threadVariant == .group &&
-                                currentUserIsClosedGroupAdmin &&
-                                dependencies[feature: .updatedGroupsAllowDisplayPicture]
-                            else { return .none }
-                            
-                            // No display picture means the dual-profile so the additionalProfile gets the icon
-                            return .rightPlus
-                        }(),
-                        accessibility: nil
-                    ),
-                    styling: SessionCell.StyleInfo(
-                        alignment: .centerHugging,
-                        customPadding: SessionCell.Padding(bottom: Values.smallSpacing),
-                        backgroundStyle: .noBackground
-                    ),
-                    onTap: { [weak self] in
-                        switch (threadViewModel.threadVariant, threadViewModel.threadDisplayPictureUrl, currentUserIsClosedGroupAdmin) {
-                            case (.contact, _, _): self?.viewDisplayPicture(threadViewModel: threadViewModel)
-                            case (.group, _, true):
-                                self?.updateGroupDisplayPicture(currentUrl: threadViewModel.threadDisplayPictureUrl)
-                            
-                            case (_, .some, _): self?.viewDisplayPicture(threadViewModel: threadViewModel)
-                            default: break
+                            if didTapProfileIcon {
+                                self?.profileImageStatus = (previous: profileImageStatus?.current, current: profileImageStatus?.previous)
+                                self?.forceRefresh(type: .postDatabaseQuery)
+                            } else {
+                                self?.showQRCodeLightBox(for: threadViewModel)
+                            }
                         }
-                        
-                    }
+                    )
+                :
+                    SessionCell.Info(
+                        id: .avatar,
+                        accessory: .profile(
+                            id: threadViewModel.id,
+                            size: (profileImageStatus?.current == .expanded ? .expanded : .hero),
+                            threadVariant: threadViewModel.threadVariant,
+                            displayPictureUrl: threadViewModel.threadDisplayPictureUrl,
+                            profile: threadViewModel.profile,
+                            profileIcon: (threadViewModel.threadIsNoteToSelf || threadVariant == .group ? .none : .qrCode),
+                            additionalProfile: threadViewModel.additionalProfile,
+                            accessibility: nil
+                        ),
+                        styling: SessionCell.StyleInfo(
+                            alignment: .centerHugging,
+                            customPadding: SessionCell.Padding(
+                                leading: 0,
+                                bottom: Values.smallSpacing
+                            ),
+                            backgroundStyle: .noBackground
+                        ),
+                        onTapView: { [weak self] targetView in
+                            let didTapQRCodeIcon: Bool = !(targetView is ProfilePictureView)
+                            
+                            if didTapQRCodeIcon {
+                                self?.profileImageStatus = (previous: profileImageStatus?.current, current: .qrCode)
+                            } else {
+                                self?.profileImageStatus = (
+                                    previous: profileImageStatus?.current,
+                                    current: (profileImageStatus?.current == .expanded ? .normal : .expanded)
+                                )
+                            }
+                            self?.forceRefresh(type: .postDatabaseQuery)
+                        }
+                    )
                 ),
                 SessionCell.Info(
                     id: .displayName,
                     title: SessionCell.TextInfo(
                         threadViewModel.displayName,
                         font: .titleLarge,
-                        alignment: .center
-                    ),
-                    trailingAccessory: (!canEditDisplayName ? nil :
-                        .icon(
-                            .pencil,
-                            size: .small,
-                            customTint: .textSecondary
-                        )
+                        alignment: .center,
+                        trailingImage: {
+                            guard !threadViewModel.threadIsNoteToSelf else { return nil }
+                            guard (dependencies.mutate(cache: .libSession) { $0.validateSessionProState(for: threadId) }) else { return nil }
+                            return ("ProBadge", { [dependencies] in SessionProBadge(size: .medium).toImage(using: dependencies) })
+                        }()
                     ),
                     styling: SessionCell.StyleInfo(
                         alignment: .centerHugging,
                         customPadding: SessionCell.Padding(
                             top: Values.smallSpacing,
-                            leading: (!canEditDisplayName ? nil : IconSize.small.size),
                             bottom: {
-                                guard threadViewModel.threadVariant != .contact else { return Values.smallSpacing }
+                                guard threadViewModel.threadVariant != .contact else { return Values.mediumSpacing }
                                 guard threadViewModel.threadDescription == nil else { return Values.smallSpacing }
                                 
                                 return Values.largeSpacing
@@ -260,15 +332,37 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                         identifier: "Username",
                         label: threadViewModel.displayName
                     ),
-                    onTap: { [weak self] in
-                        guard
-                            let info: ConfirmationModal.Info = self?.updateDisplayNameModal(
-                                threadViewModel: threadViewModel,
-                                currentUserIsClosedGroupAdmin: currentUserIsClosedGroupAdmin
-                            )
-                        else { return }
+                    onTapView: { [weak self, threadId, dependencies] targetView in
+                        guard targetView is SessionProBadge, !dependencies[cache: .libSession].isSessionPro else {
+                            guard
+                                let info: ConfirmationModal.Info = self?.updateDisplayNameModal(
+                                    threadViewModel: threadViewModel,
+                                    currentUserIsClosedGroupAdmin: currentUserIsClosedGroupAdmin
+                                )
+                            else { return }
+                            
+                            self?.transitionToScreen(ConfirmationModal(info: info), transitionType: .present)
+                            return
+                        }
                         
-                        self?.transitionToScreen(ConfirmationModal(info: info), transitionType: .present)
+                        let proCTAModalVariant: ProCTAModal.Variant = {
+                            switch threadViewModel.threadVariant {
+                                case .group:
+                                    return .groupLimit(
+                                        isAdmin: currentUserIsClosedGroupAdmin,
+                                        isSessionProActivated: (dependencies.mutate(cache: .libSession) { $0.validateSessionProState(for: threadId) }),
+                                        proBadgeImage: SessionProBadge(size: .mini).toImage(using: dependencies)
+                                    )
+                                default: return .generic
+                            }
+                        }()
+                        
+                        dependencies[singleton: .sessionProState].showSessionProCTAIfNeeded(
+                            proCTAModalVariant,
+                            presenting: { modal in
+                                self?.transitionToScreen(modal, transitionType: .present)
+                            }
+                        )
                     }
                 ),
                 
@@ -284,7 +378,7 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                             tintColor: .textSecondary,
                             customPadding: SessionCell.Padding(
                                 top: 0,
-                                bottom: 0
+                                bottom: Values.largeSpacing
                             ),
                             backgroundStyle: .noBackground
                         )
@@ -313,34 +407,37 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                             label: threadDescription
                         )
                     )
-                },
-
-                (threadViewModel.threadVariant != .contact ? nil :
-                    SessionCell.Info(
-                        id: .sessionId,
-                        subtitle: SessionCell.TextInfo(
-                            threadViewModel.id,
-                            font: .monoSmall,
-                            alignment: .center,
-                            interaction: .copy
-                        ),
-                        styling: SessionCell.StyleInfo(
-                            customPadding: SessionCell.Padding(
-                                top: Values.smallSpacing,
-                                bottom: Values.largeSpacing
-                            ),
-                            backgroundStyle: .noBackground
-                        ),
-                        accessibility: Accessibility(
-                            identifier: "Session ID",
-                            label: threadViewModel.id
-                        )
-                    )
-                )
+                }
             ].compactMap { $0 }
         )
         
+        // MARK: - Session Id
+        
+        let sessionIdSection: SectionModel = SectionModel(
+            model: (threadViewModel.threadIsNoteToSelf == true ? .sessionIdNoteToSelf : .sessionId),
+            elements: [
+                SessionCell.Info(
+                    id: .sessionId,
+                    subtitle: SessionCell.TextInfo(
+                        threadViewModel.id,
+                        font: .monoLarge,
+                        alignment: .center,
+                        interaction: .copy
+                    ),
+                    styling: SessionCell.StyleInfo(
+                        customPadding: SessionCell.Padding(bottom: Values.smallSpacing),
+                        backgroundStyle: .noBackground
+                    ),
+                    accessibility: Accessibility(
+                        identifier: "Session ID",
+                        label: threadViewModel.id
+                    )
+                )
+            ]
+        )
+        
         // MARK: - Users kicked from groups
+        
         guard !currentUserKickedFromGroup else {
             return [
                 conversationInfoSection,
@@ -387,6 +484,7 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
         }
         
         // MARK: - Standard Actions
+        
         let standardActionsSection: SectionModel = SectionModel(
             model: .content,
             elements: [
@@ -597,7 +695,9 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                 )
             ].compactMap { $0 }
         )
+        
         // MARK: - Admin Actions
+        
         let adminActionsSection: SectionModel? = (
             !currentUserIsClosedGroupAdmin ? nil :
                 SectionModel(
@@ -677,7 +777,9 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                     ].compactMap { $0 }
                 )
         )
+        
         // MARK: - Destructive Actions
+        
         let destructiveActionsSection: SectionModel = SectionModel(
             model: .destructiveActions,
             elements: [
@@ -1111,6 +1213,7 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
         
         return [
             conversationInfoSection,
+            (!showThreadPubkey ? nil : sessionIdSection),
             standardActionsSection,
             adminActionsSection,
             destructiveActionsSection
@@ -1118,24 +1221,6 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
     }
     
     // MARK: - Functions
-    
-    private func viewDisplayPicture(threadViewModel: SessionThreadViewModel) {
-        guard
-            let fileUrl: String = threadViewModel.threadDisplayPictureUrl,
-            let path: String = try? dependencies[singleton: .displayPictureManager].path(for: fileUrl)
-        else { return }
-        
-        let navController: UINavigationController = StyledNavigationController(
-            rootViewController: ProfilePictureVC(
-                imageSource: .url(URL(fileURLWithPath: path)),
-                title: threadViewModel.displayName,
-                using: dependencies
-            )
-        )
-        navController.modalPresentationStyle = .fullScreen
-        
-        self.transitionToScreen(navController, transitionType: .present)
-    }
     
     private func inviteUsersToCommunity(threadViewModel: SessionThreadViewModel) {
         guard
@@ -1521,15 +1606,13 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                 /// Update the nickname
                 dependencies[singleton: .storage].writeAsync(
                     updates: { db in
-                        try Profile
-                            .filter(id: threadId)
-                            .updateAllAndConfig(
-                                db,
-                                Profile.Columns.nickname.set(to: finalNickname),
-                                using: dependencies
-                            )
-                        db.addProfileEvent(id: threadId, change: .nickname(finalNickname))
-                        db.addConversationEvent(id: threadId, type: .updated(.displayName(finalNickname)))
+                        try Profile.updateIfNeeded(
+                            db,
+                            publicKey: threadId,
+                            nicknameUpdate: .set(to: finalNickname),
+                            profileUpdateTimestamp: nil,
+                            using: dependencies
+                        )
                     },
                     completion: { _ in
                         DispatchQueue.main.async {
@@ -1542,15 +1625,13 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                 /// Remove the nickname
                 dependencies[singleton: .storage].writeAsync(
                     updates: { db in
-                        try Profile
-                            .filter(id: threadId)
-                            .updateAllAndConfig(
-                                db,
-                                Profile.Columns.nickname.set(to: nil),
-                                using: dependencies
-                            )
-                        db.addProfileEvent(id: threadId, change: .nickname(nil))
-                        db.addConversationEvent(id: threadId, type: .updated(.displayName(displayName)))
+                        try Profile.updateIfNeeded(
+                            db,
+                            publicKey: threadId,
+                            nicknameUpdate: .set(to: nil),
+                            profileUpdateTimestamp: nil,
+                            using: dependencies
+                        )
                     },
                     completion: { _ in
                         DispatchQueue.main.async {
@@ -1664,50 +1745,80 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
         guard dependencies[feature: .updatedGroupsAllowDisplayPicture] else { return }
         
         let iconName: String = "profile_placeholder" // stringlint:ignore
+        var hasSetNewProfilePicture: Bool = false
+        let currentSource: ImageDataManager.DataSource? = {
+            let source: ImageDataManager.DataSource? = currentUrl
+                .map { try? dependencies[singleton: .displayPictureManager].path(for: $0) }
+                .map { ImageDataManager.DataSource.url(URL(fileURLWithPath: $0)) }
+            
+            return (source?.contentExists == true ? source : nil)
+        }()
+        let body: ConfirmationModal.Info.Body = .image(
+            source: nil,
+            placeholder: (
+                currentSource ??
+                Lucide.image(icon: .image, size: 40).map { image in
+                    ImageDataManager.DataSource.image(
+                        iconName,
+                        image
+                            .withTintColor(#colorLiteral(red: 0.631372549, green: 0.6352941176, blue: 0.631372549, alpha: 1), renderingMode: .alwaysTemplate)
+                            .withCircularBackground(backgroundColor: #colorLiteral(red: 0.1764705882, green: 0.1764705882, blue: 0.1764705882, alpha: 1))
+                    )
+                }
+            ),
+            icon: (currentUrl != nil ? .pencil : .rightPlus),
+            style: .circular,
+            description: nil,   // FIXME: Need to add Group Pro display pic description
+            accessibility: Accessibility(
+                identifier: "Upload",
+                label: "Upload"
+            ),
+            dataManager: dependencies[singleton: .imageDataManager],
+            onProBageTapped: nil,   // FIXME: Need to add Group Pro display pic CTA
+            onClick: { [weak self] onDisplayPictureSelected in
+                self?.onDisplayPictureSelected = { source, cropRect in
+                    onDisplayPictureSelected(.image(
+                        source: source,
+                        cropRect: cropRect,
+                        replacementIcon: .pencil,
+                        replacementCancelTitle: "clear".localized()
+                    ))
+                    hasSetNewProfilePicture = true
+                }
+                self?.showPhotoLibraryForAvatar()
+            }
+        )
         
         self.transitionToScreen(
             ConfirmationModal(
                 info: ConfirmationModal.Info(
                     title: "groupSetDisplayPicture".localized(),
-                    body: .image(
-                        source: currentUrl
-                            .map { try? dependencies[singleton: .displayPictureManager].path(for: $0) }
-                            .map { ImageDataManager.DataSource.url(URL(fileURLWithPath: $0)) },
-                        placeholder: UIImage(named: iconName).map {
-                            ImageDataManager.DataSource.image(iconName, $0)
-                        },
-                        icon: .rightPlus,
-                        style: .circular,
-                        description: nil,
-                        accessibility: Accessibility(
-                            identifier: "Image picker",
-                            label: "Image picker"
-                        ),
-                        dataManager: dependencies[singleton: .imageDataManager],
-                        onProBageTapped: nil,
-                        onClick: { [weak self] onDisplayPictureSelected in
-                            self?.onDisplayPictureSelected = onDisplayPictureSelected
-                            self?.showPhotoLibraryForAvatar()
-                        }
-                    ),
+                    body: body,
                     confirmTitle: "save".localized(),
                     confirmEnabled: .afterChange { info in
                         switch info.body {
-                            case .image(let source, _, _, _, _, _, _, _, _): return (source?.imageData != nil)
+                            case .image(.some(let source), _, _, _, _, _, _, _, _): return source.contentExists
                             default: return false
                         }
                     },
                     cancelTitle: "remove".localized(),
-                    cancelEnabled: .bool(currentUrl != nil),
+                    cancelEnabled: (currentUrl != nil ? .bool(true) : .afterChange { info in
+                        switch info.body {
+                            case .image(.some(let source), _, _, _, _, _, _, _, _): return source.contentExists
+                            default: return false
+                        }
+                    }),
                     hasCloseButton: true,
                     dismissOnConfirm: false,
                     onConfirm: { [weak self] modal in
                         switch modal.info.body {
-                            case .image(.some(let source), _, _, _, _, _, _, _, _):
-                                guard let imageData: Data = source.imageData else { return }
-                                
+                            case .image(.some(let source), _, _, let style, _, _, _, _, _):
+                                // FIXME: Need to add Group Pro display pic CTA
                                 self?.updateGroupDisplayPicture(
-                                    displayPictureUpdate: .groupUploadImageData(imageData),
+                                    displayPictureUpdate: .groupUploadImage(
+                                        source: source,
+                                        cropRect: style.cropRect
+                                    ),
                                     onUploadComplete: { [weak modal] in
                                         Task { @MainActor in modal?.close() }
                                     }
@@ -1717,12 +1828,22 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
                         }
                     },
                     onCancel: { [weak self] modal in
-                        self?.updateGroupDisplayPicture(
-                            displayPictureUpdate: .groupRemove,
-                            onUploadComplete: { [weak modal] in
-                                Task { @MainActor in modal?.close() }
-                            }
-                        )
+                        if hasSetNewProfilePicture {
+                            modal.updateContent(
+                                with: modal.info.with(
+                                    body: body,
+                                    cancelTitle: "remove".localized()
+                                )
+                            )
+                            hasSetNewProfilePicture = false
+                        } else {
+                            self?.updateGroupDisplayPicture(
+                                displayPictureUpdate: .groupRemove,
+                                onUploadComplete: { [weak modal] in
+                                    Task { @MainActor in modal?.close() }
+                                }
+                            )
+                        }
                     }
                 )
             ),
@@ -1733,9 +1854,11 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
     @MainActor private func showPhotoLibraryForAvatar() {
         Permissions.requestLibraryPermissionIfNeeded(isSavingMedia: false, using: dependencies) { [weak self] in
             DispatchQueue.main.async {
-                let picker: UIImagePickerController = UIImagePickerController()
-                picker.sourceType = .photoLibrary
-                picker.mediaTypes = [ "public.image" ]  // stringlint:disable
+                var configuration: PHPickerConfiguration = PHPickerConfiguration()
+                configuration.selectionLimit = 1
+                configuration.filter = .any(of: [.images, .livePhotos])
+                
+                let picker: PHPickerViewController = PHPickerViewController(configuration: configuration)
                 picker.delegate = self?.imagePickerHandler
                 
                 self?.transitionToScreen(picker, transitionType: .present)
@@ -1752,102 +1875,106 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
             default: break
         }
         
-        Just(displayPictureUpdate)
-            .setFailureType(to: Error.self)
-            .flatMap { [weak self, dependencies] update -> AnyPublisher<DisplayPictureManager.Update, Error> in
+        Task.detached(priority: .userInitiated) { [weak self, threadId, dependencies] in
+            var targetUpdate: DisplayPictureManager.Update = displayPictureUpdate
+            var indicator: ModalActivityIndicatorViewController?
+            
+            do {
                 switch displayPictureUpdate {
-                    case .none, .currentUserRemove, .currentUserUploadImageData, .currentUserUpdateTo,
-                        .contactRemove, .contactUpdateTo:
-                        return Fail(error: AttachmentError.invalidStartState).eraseToAnyPublisher()
+                    case .none, .currentUserRemove, .currentUserUpdateTo, .contactRemove,
+                        .contactUpdateTo:
+                        throw AttachmentError.invalidStartState
                         
-                    case .groupRemove, .groupUpdateTo:
-                        return Just(displayPictureUpdate)
-                            .setFailureType(to: Error.self)
-                            .eraseToAnyPublisher()
-                        
-                    case .groupUploadImageData(let data):
+                    case .groupRemove, .groupUpdateTo: break
+                    case .groupUploadImage(let source, let cropRect):
                         /// Show a blocking loading indicator while uploading but not while updating or syncing the group configs
-                        return dependencies[singleton: .displayPictureManager]
-                            .prepareAndUploadDisplayPicture(imageData: data, compression: true)
-                            .showingBlockingLoading(in: self?.navigatableState)
-                            .map { url, filePath, key, _ -> DisplayPictureManager.Update in
-                                .groupUpdateTo(url: url, key: key, filePath: filePath)
-                            }
-                            .mapError { $0 as Error }
-                            .handleEvents(
-                                receiveCompletion: { result in
-                                    switch result {
-                                        case .failure(let error):
-                                            let message: String = {
-                                                switch (displayPictureUpdate, error) {
-                                                    case (.groupRemove, _): return "profileDisplayPictureRemoveError".localized()
-                                                    case (_, DisplayPictureError.uploadMaxFileSizeExceeded):
-                                                        return "profileDisplayPictureSizeError".localized()
-                                                    
-                                                    default: return "errorConnection".localized()
-                                                }
-                                            }()
-                                            
-                                            self?.transitionToScreen(
-                                                ConfirmationModal(
-                                                    info: ConfirmationModal.Info(
-                                                        title: "deleteAfterLegacyGroupsGroupUpdateErrorTitle".localized(),
-                                                        body: .text(message),
-                                                        cancelTitle: "okay".localized(),
-                                                        cancelStyle: .alert_text,
-                                                        dismissType: .single
-                                                    )
-                                                ),
-                                                transitionType: .present
-                                            )
-                                        
-                                        case .finished: onUploadComplete()
-                                    }
-                                }
+                        indicator = await MainActor.run { [weak self] in
+                            let indicator: ModalActivityIndicatorViewController = ModalActivityIndicatorViewController(onAppear: { _ in })
+                            self?.transitionToScreen(indicator, transitionType: .present)
+                            return indicator
+                        }
+                        
+                        let pendingAttachment: PendingAttachment = PendingAttachment(
+                            source: .media(source),
+                            using: dependencies
+                        )
+                        let preparedAttachment: PreparedAttachment = try await dependencies[singleton: .displayPictureManager]
+                            .prepareDisplayPicture(
+                                attachment: pendingAttachment,
+                                fallbackIfConversionTakesTooLong: true,
+                                cropRect: cropRect
                             )
-                            .eraseToAnyPublisher()
+                        let result = try await dependencies[singleton: .displayPictureManager]
+                            .uploadDisplayPicture(preparedAttachment: preparedAttachment)
+                        await MainActor.run { onUploadComplete() }
+                        
+                        targetUpdate = .groupUpdateTo(
+                            url: result.downloadUrl,
+                            key: result.encryptionKey
+                        )
                 }
             }
-            .flatMapStorageReadPublisher(using: dependencies) { [threadId] db, displayPictureUpdate -> (DisplayPictureManager.Update, String?) in
-                (
-                    displayPictureUpdate,
-                    try? ClosedGroup
-                        .filter(id: threadId)
-                        .select(.displayPictureUrl)
-                        .asRequest(of: String.self)
-                        .fetchOne(db)
-                )
-            }
-            .flatMap { [threadId, dependencies] displayPictureUpdate, existingDownloadUrl -> AnyPublisher<String?, Error> in
-                MessageSender
-                    .updateGroup(
-                        groupSessionId: threadId,
-                        displayPictureUpdate: displayPictureUpdate,
-                        using: dependencies
-                    )
-                    .map { _ in existingDownloadUrl }
-                    .eraseToAnyPublisher()
-            }
-            .handleEvents(
-                receiveOutput: { [dependencies] existingDownloadUrl in
-                    /// Remove any cached avatar image value
-                    if
-                        let existingDownloadUrl: String = existingDownloadUrl,
-                        let existingFilePath: String = try? dependencies[singleton: .displayPictureManager]
-                            .path(for: existingDownloadUrl)
-                    {
-                        Task {
-                            await dependencies[singleton: .imageDataManager].removeImage(
-                                identifier: existingFilePath
+            catch {
+                let message: String = {
+                    switch (displayPictureUpdate, error) {
+                        case (.groupRemove, _): return "profileDisplayPictureRemoveError".localized()
+                        case (_, AttachmentError.fileSizeTooLarge):
+                            return "profileDisplayPictureSizeError".localized()
+                            
+                        default: return "errorConnection".localized()
+                    }
+                }()
+                
+                await indicator?.dismiss { [weak self] in
+                    self?.transitionToScreen(
+                        ConfirmationModal(
+                            info: ConfirmationModal.Info(
+                                title: "deleteAfterLegacyGroupsGroupUpdateErrorTitle".localized(),
+                                body: .text(message),
+                                cancelTitle: "okay".localized(),
+                                cancelStyle: .alert_text,
+                                dismissType: .single
                             )
-                            try? dependencies[singleton: .fileManager].removeItem(atPath: existingFilePath)
-                        }
+                        ),
+                        transitionType: .present
+                    )
+                }
+                return
+            }
+            
+            let existingDownloadUrl: String? = try? await dependencies[singleton: .storage].readAsync { db in
+                try? ClosedGroup
+                    .filter(id: threadId)
+                    .select(.displayPictureUrl)
+                    .asRequest(of: String.self)
+                    .fetchOne(db)
+            }
+            
+            do {
+                try await MessageSender.updateGroup(
+                    groupSessionId: threadId,
+                    displayPictureUpdate: targetUpdate,
+                    using: dependencies
+                )
+                
+                /// Remove any cached avatar image value (only want to do so if the above update succeeded)
+                if
+                    let existingDownloadUrl: String = existingDownloadUrl,
+                    let existingFilePath: String = try? dependencies[singleton: .displayPictureManager]
+                        .path(for: existingDownloadUrl)
+                {
+                    Task { [dependencies] in
+                        await dependencies[singleton: .imageDataManager].removeImage(
+                            identifier: existingFilePath
+                        )
+                        try? dependencies[singleton: .fileManager].removeItem(atPath: existingFilePath)
                     }
                 }
-            )
-            .subscribe(on: DispatchQueue.global(qos: .userInitiated), using: dependencies)
-            .receive(on: DispatchQueue.main, using: dependencies)
-            .sinkUntilComplete()
+            }
+            catch {}
+            
+            await indicator?.dismiss()
+        }
     }
     
     private func updateBlockedState(
@@ -1984,5 +2111,46 @@ class ThreadSettingsViewModel: SessionTableViewModel, NavigatableStateHolder, Ob
             
             case (.community, _), (.legacyGroup, false), (.group, false): return nil
         }
+    }
+    
+    private func showQRCodeLightBox(for threadViewModel: SessionThreadViewModel) {
+        let qrCodeImage: UIImage = QRCode.generate(
+            for: threadViewModel.getQRCodeString(),
+            hasBackground: false,
+            iconName: "SessionWhite40" // stringlint:ignore
+        )
+        .withRenderingMode(.alwaysTemplate)
+        
+        let viewController = SessionHostingViewController(
+            rootView: LightBox(
+                itemsToShare: [
+                    QRCode.qrCodeImageWithBackground(
+                        image: qrCodeImage,
+                        size: CGSize(width: 400, height: 400),
+                        insets: UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+                    )
+                ]
+            ) {
+                VStack {
+                    Spacer()
+                    
+                    QRCodeView(
+                        qrCodeImage: qrCodeImage,
+                        themeStyle: ThemeManager.currentTheme.interfaceStyle
+                    )
+                    .aspectRatio(1, contentMode: .fit)
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: .infinity
+                    )
+                    
+                    Spacer()
+                }
+                .backgroundColor(themeColor: .newConversation_background)
+            },
+            customizedNavigationBackground: .backgroundSecondary
+        )
+        viewController.modalPresentationStyle = .fullScreen
+        self.transitionToScreen(viewController, transitionType: .present)
     }
 }
